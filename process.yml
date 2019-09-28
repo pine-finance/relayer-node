@@ -1,0 +1,12 @@
+apps:
+  - script   : 'ts-node'
+    args     : 'src/entrypoints/server.ts'
+    name     : 'avatars'
+    instances: 0
+    exec_mode: cluster
+
+  - script   : 'ts-node'
+    args     : 'src/entrypoints/watcher.ts'
+    name     : 'watcher'
+    instances: 1
+    exec_mode: fork

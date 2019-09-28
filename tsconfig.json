@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "commonjs",
+    "target": "es6",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "plugins": [{ "name": "tslint-language-service" }]
+  },
+  "exclude": ["node_modules", "test", "backoffice", "dist", "src/**/*.spec.ts"]
+}

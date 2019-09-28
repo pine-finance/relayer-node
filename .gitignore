@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+combined.log
+process.log
+
+node_modules
+.env
+postgres_data
+
+
