@@ -2,8 +2,11 @@ import Web3 from 'web3'
 import { EventLog } from 'web3/types'
 import Contract from 'web3/eth/contract'
 
+import { db } from '../database'
 import { ERC20ABI, uniswapFactoryABI, uniswapexABI } from '../contracts'
 import { retryAsync, logger, asyncBatch } from '../utils'
+import { buildId } from '../book/utils'
+
 
 export default class Indexer {
   w3: Web3
@@ -31,7 +34,7 @@ export default class Indexer {
 
   async getOrders(
     toBlock: number,
-    onRawOrder: (data: string, txHash: string) => Promise<void>
+    onRawOrder: (data: string, event: EventLog) => Promise<void>
   ) {
     if (toBlock <= this.lastMonitored) {
       logger.debug(`Indexer: skip getOrders, ${this.lastMonitored}-${toBlock}`)
@@ -58,10 +61,14 @@ export default class Indexer {
 
     logger.debug(`Indexer: Found ${events.length} ETH orders events`)
 
-    for (const i in events) {
-      const event = events[i]
-      logger.info(`Indexer: Found ETH Order ${event.transactionHash}`)
-      await onRawOrder(event.returnValues._data, event.transactionHash)
+    for (const event of events) {
+      const orderId = buildId(event)
+      if (!(await db.existOrder(orderId))) {
+        logger.info(`Indexer: Found ETH Order ${event.transactionHash}`)
+        await onRawOrder(event.returnValues._data, event)
+      } else {
+        logger.info(`Indexer: Found already indexed ETH Order id: ${orderId}`)
+      }
     }
 
     // Load events of all Uniswap tokens
@@ -76,7 +83,6 @@ export default class Indexer {
       callback: async (indexesBatch: any[]) => {
         const promises = indexesBatch.map(async (index: number) => {
           const tokenAddr = await this.getUniswapAddress(index)
-
           tokensChecked++
 
           // Skip USDT
@@ -87,10 +93,13 @@ export default class Indexer {
             return
           }
 
-          logger.debug(
+          logger.info(
             `Indexer: ${tokensChecked}/${total} - Monitoring token ${tokenAddr}`
           )
+
+
           const token = new this.w3.eth.Contract(ERC20ABI, tokenAddr)
+
           const events = await retryAsync(
             this.getSafePastEvents(token, 'Transfer', this.lastMonitored, toBlock)
           )
@@ -107,9 +116,15 @@ export default class Indexer {
             callback: async (eventsBatch: EventLog[]) => {
               const promises = eventsBatch.map(async (event: EventLog) => {
                 const tx = event.transactionHash
+                const orderId = buildId(event)
                 checkedCount += 1
 
                 if (checked.includes(tx)) {
+                  return
+                }
+
+                if (await db.existOrder(orderId)) {
+                  logger.info(`Indexer: Found already indexed Token Order id: ${orderId}`)
                   return
                 }
 
@@ -120,11 +135,11 @@ export default class Indexer {
                 logger.debug(
                   `Indexer: ${checkedCount}/${events.length} - Check TX ${tx}`
                 )
-                if (txData.startsWith('0xa9059cbb') && txData.length == 714) {
+                if (txData.startsWith('0xa9059cbb') && txData.length == 714) { // use a variable and change to support contract wallets
                   logger.info(
                     `Indexer: Found token order ${token.options.address} ${tx}`
                   )
-                  await onRawOrder(txData, tx)
+                  await onRawOrder(txData, event)
                 }
 
                 checked.push(tx)
@@ -132,13 +147,13 @@ export default class Indexer {
 
               await Promise.all(promises)
             },
-            batchSize: 100, // env.get('BATCH_SIZE'),
+            batchSize: 50, // env.get('BATCH_SIZE'),
             retryAttempts: 20
           })
         })
         await Promise.all(promises)
       },
-      batchSize: 5, // env.get('BATCH_SIZE'),
+      batchSize: 1, // env.get('BATCH_SIZE'),
       retryAttempts: 20
     })
 

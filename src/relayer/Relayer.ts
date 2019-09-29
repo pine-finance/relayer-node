@@ -54,8 +54,8 @@ export default class Relayer {
       .executeOrder(
         order.fromToken,
         order.toToken,
-        order.minReturn,
-        order.fee,
+        order.minReturn.toString(),
+        order.fee.toString(),
         order.owner,
         witnesses
       )
@@ -69,7 +69,7 @@ export default class Relayer {
       // Fee is too low
       logger.verbose(
         `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-          estimatedGas}`
+        estimatedGas}`
       )
       return undefined
     }

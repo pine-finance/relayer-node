@@ -1,9 +1,12 @@
 import Web3 from 'web3'
+import { EventLog } from 'web3/types'
 import Contract from 'web3/eth/contract'
 
-import { Order } from './types'
+import { db } from '../database'
 import { uniswapexABI } from '../contracts'
 import { retryAsync, logger } from '../utils'
+import { Order } from './types'
+import { buildId } from './utils'
 
 export default class Book {
   w3: Web3
@@ -21,16 +24,20 @@ export default class Book {
     this.filledOrders = {}
   }
 
-  async add(data: string, txHash: string) {
+  async add(data: string, event: EventLog) {
     logger.debug(`Book: Decoding raw order ${data}`)
 
-    const order = await this.decode(data, txHash)
-
+    const order = await this.decode(data, event)
     logger.debug(
       `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
     )
 
     this.orders.push(order)
+    try {
+      await db.saveOrder(order)
+    } catch (e) {
+      console.log(e.message) // @TODO: revisit this
+    }
   }
 
   async exists(order: Order): Promise<boolean> {
@@ -38,8 +45,8 @@ export default class Book {
       .existOrder(
         order.fromToken,
         order.toToken,
-        order.minReturn,
-        order.fee,
+        order.minReturn.toString(),
+        order.fee.toString(),
         order.owner,
         order.witness
       )
@@ -57,8 +64,8 @@ export default class Book {
       .canExecuteOrder(
         order.fromToken,
         order.toToken,
-        order.minReturn,
-        order.fee,
+        order.minReturn.toString(),
+        order.fee.toString(),
         order.owner,
         order.witness
       )
@@ -69,15 +76,19 @@ export default class Book {
     return ready
   }
 
-  async decode(inputRawData: string, txHash: string): Promise<Order> {
-    logger.debug(`Book: Decodeding ${txHash}, raw: ${inputRawData}`)
+  async decode(inputRawData: string, event: EventLog): Promise<Order> {
 
+    const id = buildId(event)
+    const txHash = event.transactionHash
     const data =
       inputRawData.length > 448
         ? `0x${inputRawData.substr(-448)}`
         : inputRawData
+
+    logger.debug(`Book: Decodeding ${txHash}, raw: ${inputRawData}`)
     const decoded = await this.uniswapex.methods.decodeOrder(`${data}`).call()
 
+    logger.debug(`Book: Decoded ${txHash} id        ${id}`)
     logger.debug(`Book: Decoded ${txHash} fromToken ${decoded.fromToken}`)
     logger.debug(`Book: Decoded ${txHash} toToken   ${decoded.toToken}`)
     logger.debug(`Book: Decoded ${txHash} minReturn ${decoded.minReturn}`)
@@ -88,6 +99,7 @@ export default class Book {
 
     return {
       ...decoded,
+      id,
       txHash
     }
   }
