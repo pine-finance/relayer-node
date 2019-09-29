@@ -65,73 +65,87 @@ export default class Indexer {
     }
 
     // Load events of all Uniswap tokens
-    for (let i = 1; i < total; i++) {
-      const tokenAddr = await this.getUniswapAddress(i)
 
-      tokensChecked++
-
-      // Skip USDT
-      if (
-        tokenAddr.toLowerCase() == '0xdac17f958d2ee523a2206206994597c13d831ec7'
-      ) {
-        logger.debug(`Indexer: Skip token USDT`)
-        continue
-      }
-
-      logger.debug(
-        `Indexer: ${tokensChecked}/${total} - Monitoring token ${tokenAddr}`
-      )
-      const token = new this.w3.eth.Contract(ERC20ABI, tokenAddr)
-      const events = await retryAsync(
-        this.getSafePastEvents(token, 'Transfer', this.lastMonitored, toBlock)
-      )
-
-      logger.info(
-        `Indexer: Found ${events.length} token transfer events for ${tokenAddr}`
-      )
-
-      const checked: string[] = []
-      let checkedCount = 0
-
-      await asyncBatch({
-        elements: events,
-        callback: async (eventsBatch: EventLog[]) => {
-          const promises = eventsBatch.map(async (event: EventLog) => {
-            const tx = event.transactionHash
-            checkedCount += 1
-
-            if (checked.includes(tx)) {
-              return
-            }
-
-            logger.debug(`Check tx: ${tx}`)
-            const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
-            const txData = fullTx ? fullTx.input : ''
-
-            logger.debug(
-              `Indexer: ${checkedCount}/${events.length} - Check TX ${tx}`
-            )
-            if (txData.startsWith('0xa9059cbb') && txData.length == 714) {
-              logger.info(
-                `Indexer: Found token order ${token.options.address} ${tx}`
-              )
-              await onRawOrder(txData, tx)
-            }
-
-            checked.push(tx)
-          })
-
-          await Promise.all(promises)
-        },
-        batchSize: 200, // env.get('BATCH_SIZE'),
-        retryAttempts: 20
-      })
-
-      logger.info(
-        `Indexer: Finished getOrders for range ${this.lastMonitored}-${toBlock}`
-      )
-      this.lastMonitored = toBlock
+    const addressesIndex = []
+    for (let i = 1; i <= total; i++) {
+      addressesIndex.push(i)
     }
+
+    await asyncBatch({
+      elements: addressesIndex,
+      callback: async (indexesBatch: any[]) => {
+        const promises = indexesBatch.map(async (index: number) => {
+          const tokenAddr = await this.getUniswapAddress(index)
+
+          tokensChecked++
+
+          // Skip USDT
+          if (
+            tokenAddr.toLowerCase() == '0xdac17f958d2ee523a2206206994597c13d831ec7'
+          ) {
+            logger.debug(`Indexer: Skip token USDT`)
+            return
+          }
+
+          logger.debug(
+            `Indexer: ${tokensChecked}/${total} - Monitoring token ${tokenAddr}`
+          )
+          const token = new this.w3.eth.Contract(ERC20ABI, tokenAddr)
+          const events = await retryAsync(
+            this.getSafePastEvents(token, 'Transfer', this.lastMonitored, toBlock)
+          )
+
+          logger.info(
+            `Indexer: Found ${events.length} token transfer events for ${tokenAddr}`
+          )
+
+          const checked: string[] = []
+          let checkedCount = 0
+
+          await asyncBatch({
+            elements: events,
+            callback: async (eventsBatch: EventLog[]) => {
+              const promises = eventsBatch.map(async (event: EventLog) => {
+                const tx = event.transactionHash
+                checkedCount += 1
+
+                if (checked.includes(tx)) {
+                  return
+                }
+
+                logger.debug(`Check tx: ${tx}`)
+                const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
+                const txData = fullTx ? fullTx.input : ''
+
+                logger.debug(
+                  `Indexer: ${checkedCount}/${events.length} - Check TX ${tx}`
+                )
+                if (txData.startsWith('0xa9059cbb') && txData.length == 714) {
+                  logger.info(
+                    `Indexer: Found token order ${token.options.address} ${tx}`
+                  )
+                  await onRawOrder(txData, tx)
+                }
+
+                checked.push(tx)
+              })
+
+              await Promise.all(promises)
+            },
+            batchSize: 100, // env.get('BATCH_SIZE'),
+            retryAttempts: 20
+          })
+        })
+        await Promise.all(promises)
+      },
+      batchSize: 5, // env.get('BATCH_SIZE'),
+      retryAttempts: 20
+    })
+
+    logger.info(
+      `Indexer: Finished getOrders for range ${this.lastMonitored}-${toBlock}`
+    )
+    this.lastMonitored = toBlock
   }
 
   async getSafePastEvents(
@@ -158,7 +172,7 @@ export default class Indexer {
         const result = await Promise.all([
           this.getSafePastEvents(contract, name, fromBlock, pivot),
           this.getSafePastEvents(contract, name, pivot, toBlock)
-        ]) //@TODO: revisit it. Different order
+        ])
 
         return [...result[0], ...result[1]]
       } else {
