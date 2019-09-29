@@ -1,3 +1,3 @@
-import Relayer from 'Relayer'
+import Relayer from './Relayer'
 
-export default Relayewr
+export default Relayer

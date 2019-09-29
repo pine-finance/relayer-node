@@ -3,7 +3,7 @@ import { EventLog } from 'web3/types'
 import Contract from 'web3/eth/contract'
 
 import { ERC20ABI, uniswapFactoryABI, uniswapexABI } from '../contracts'
-import { retryAsync, logger } from '../utils'
+import { retryAsync, logger, asyncBatch } from '../utils'
 
 export default class Indexer {
   w3: Web3
@@ -92,19 +92,19 @@ export default class Indexer {
 
       const checked: string[] = []
       let checkedCount = 0
-      let promises = []
-      for (const i in events) {
-        const event = events[i]
 
-        const tx = event.transactionHash
-        checkedCount += 1
+      await asyncBatch({
+        elements: events,
+        callback: async (eventsBatch: EventLog[]) => {
+          const promises = eventsBatch.map(async (event: EventLog) => {
+            const tx = event.transactionHash
+            checkedCount += 1
 
-        if (checked.includes(tx)) {
-          continue
-        }
-        promises.push(
-          new Promise(async res => {
-            logger.info(`Check tx: ${tx}`)
+            if (checked.includes(tx)) {
+              return
+            }
+
+            logger.debug(`Check tx: ${tx}`)
             const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
             const txData = fullTx ? fullTx.input : ''
 
@@ -119,25 +119,19 @@ export default class Indexer {
             }
 
             checked.push(tx)
-            res(true)
           })
-        )
 
-        if (promises && promises.length > 200) {
           await Promise.all(promises)
-          promises = []
-        }
-      }
+        },
+        batchSize: 200, // env.get('BATCH_SIZE'),
+        retryAttempts: 20
+      })
 
-      if (promises.length > 0) {
-        await Promise.all(promises)
-      }
+      logger.info(
+        `Indexer: Finished getOrders for range ${this.lastMonitored}-${toBlock}`
+      )
+      this.lastMonitored = toBlock
     }
-
-    logger.info(
-      `Indexer: Finished getOrders for range ${this.lastMonitored}-${toBlock}`
-    )
-    this.lastMonitored = toBlock
   }
 
   async getSafePastEvents(
