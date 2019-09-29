@@ -15,12 +15,12 @@ export default class Relayer {
   constructor(web3: Web3) {
     const { UNISWAPEX_CONTRACT, SENDER_ADDRESS, SENDER_PRIVKEY } = process.env
     this.w3 = web3
-    this.uniswapex = new web3.eth.Contract(
-      uniswapexABI,
-      UNISWAPEX_CONTRACT
-    )
+    this.uniswapex = new web3.eth.Contract(uniswapexABI, UNISWAPEX_CONTRACT)
 
-    const privateKey = SENDER_PRIVKEY && SENDER_PRIVKEY.startsWith('0x') ? SENDER_PRIVKEY : `0x${SENDER_PRIVKEY}`;
+    const privateKey =
+      SENDER_PRIVKEY && SENDER_PRIVKEY.startsWith('0x')
+        ? SENDER_PRIVKEY
+        : `0x${SENDER_PRIVKEY}`
 
     const account = web3.eth.accounts.privateKeyToAccount(privateKey)
     web3.eth.accounts.wallet.add(account)
@@ -61,13 +61,15 @@ export default class Relayer {
       )
       .estimateGas({ from: this.account.address })
 
-    logger.debug(`Relayer: Estimated gas for ${order.txHash} -> ${estimatedGas}`)
+    logger.debug(
+      `Relayer: Estimated gas for ${order.txHash} -> ${estimatedGas}`
+    )
 
     if (gasPrice * estimatedGas > order.fee) {
       // Fee is too low
       logger.verbose(
         `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-        estimatedGas}`
+          estimatedGas}`
       )
       return undefined
     }
@@ -82,7 +84,11 @@ export default class Relayer {
           order.owner,
           witnesses
         )
-        .send({ from: this.account.address, gas: estimatedGas, gasPrice: gasPrice })
+        .send({
+          from: this.account.address,
+          gas: estimatedGas,
+          gasPrice: gasPrice
+        })
 
       logger.info(
         `Relayer: Filled ${order.txHash} order, txHash: ${tx.transactionHash}`

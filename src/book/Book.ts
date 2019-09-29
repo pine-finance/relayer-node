@@ -9,8 +9,7 @@ export default class Book {
   w3: Web3
   uniswapex: Contract
   orders: Order[]
-  filledOrders: { [key: string]: string };
-
+  filledOrders: { [key: string]: string }
 
   constructor(w3: Web3) {
     this.w3 = w3
@@ -94,29 +93,34 @@ export default class Book {
   }
 
   async canExecute(order: Order): Promise<boolean> {
-    return await retryAsync(this.isReady(order)) &&
-      await this.isPending(order)
+    return (
+      (await retryAsync(this.isReady(order))) && (await this.isPending(order))
+    )
   }
 
   getPendingOrders(): Order[] {
-    const result = this.orders.filter((o: Order) => this.filledOrders[o.txHash] === undefined);
+    const result = this.orders.filter(
+      (o: Order) => this.filledOrders[o.txHash] === undefined
+    )
 
-    logger.debug(`Order manager: Retrieving ${result.length} pending orders`);
+    logger.debug(`Order manager: Retrieving ${result.length} pending orders`)
 
-    return result;
+    return result
   }
 
   isPending(order: Order): boolean {
-    const result = this.filledOrders[order.txHash] === undefined;
+    const result = this.filledOrders[order.txHash] === undefined
 
-    logger.debug(`Book: Order ${order.txHash} is ${result ? '' : 'not'} pending`);
+    logger.debug(
+      `Book: Order ${order.txHash} is ${result ? '' : 'not'} pending`
+    )
 
-    return result;
+    return result
   }
 
   setFilled(order: Order, executedTx: string): void {
-    logger.debug(`Book: Order ${order.txHash} was filled by ${executedTx}`);
+    logger.debug(`Book: Order ${order.txHash} was filled by ${executedTx}`)
 
-    this.filledOrders[order.txHash] = executedTx;
+    this.filledOrders[order.txHash] = executedTx
   }
 }

@@ -1,10 +1,10 @@
 import ProgressBar from 'progress'
 
 export type AsyncBatchOptions = {
-  elements: any[],
-  retryAttempts: number,
+  elements: any[]
+  retryAttempts: number
   logFormat?: string
-  batchSize: number,
+  batchSize: number
   callback: any
 }
 
@@ -20,12 +20,8 @@ export async function asyncBatch(options: AsyncBatchOptions) {
 
   if (!callback) throw new Error('[asyncBatch] A callback is required')
 
-
-
   console.warn(
-    `[asyncBatch] Defaulting to ${batchSize} as batch size, got ${
-    options.batchSize
-    }`
+    `[asyncBatch] Defaulting to ${batchSize} as batch size, got ${options.batchSize}`
   )
 
   let result: any[] = []
@@ -50,9 +46,7 @@ export async function asyncBatch(options: AsyncBatchOptions) {
       retryAttempts -= 1
 
       console.warn(
-        `[asyncBatch] Retrying upon error ${
-        error.message
-        }. Attempts left ${retryAttempts}`
+        `[asyncBatch] Retrying upon error ${error.message}. Attempts left ${retryAttempts}`
       )
     }
   }

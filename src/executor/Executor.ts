@@ -1,5 +1,5 @@
-import Book from "../book";
-import Relayer from "../relayer"
+import Book from '../book'
+import Relayer from '../relayer'
 import { retryAsync, logger } from '../utils'
 
 export default class Executor {
@@ -21,9 +21,7 @@ export default class Executor {
 
       if (exists) {
         // Check if order is ready to be filled and it's still pending
-        if (
-          (await this.book.canExecute(order))
-        ) {
+        if (await this.book.canExecute(order)) {
           logger.verbose(`Executor: Filling order ${order.txHash}`)
           // Fill order, retry only 4 times
           const result = await retryAsync(this.relayer.fillOrder(order), 4)
