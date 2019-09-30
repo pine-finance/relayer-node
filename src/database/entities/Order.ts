@@ -7,28 +7,28 @@ export class Orders {
 
   @Column()
   @Index()
-  fromToken: string = '';
+  fromToken: string = ''
 
   @Column()
   @Index()
-  toToken: string = '';
+  toToken: string = ''
 
   @Column()
-  minReturn: string = '';
-
-  @Column()
-  @Index()
-  fee: string = '';
+  minReturn: string = ''
 
   @Column()
   @Index()
-  owner: string = '';
+  fee: string = ''
 
   @Column()
-  secret: string = '';
+  @Index()
+  owner: string = ''
 
   @Column()
-  witness: string = '';
+  secret: string = ''
+
+  @Column()
+  witness: string = ''
 
   @Column()
   @Index()
@@ -37,5 +37,4 @@ export class Orders {
   @Column({ nullable: true })
   @Index()
   executedTx?: string = ''
-
 }

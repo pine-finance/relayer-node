@@ -8,7 +8,7 @@ export function retryAsync(_async: Promise<any>, retries = 10) {
     onRetry: err => {
       logger.warn(
         `${new Date().getTime()} - Received error ${
-        err.toString().split('\n')[0]
+          err.toString().split('\n')[0]
         }`
       )
     }

@@ -7,7 +7,6 @@ import { ERC20ABI, uniswapFactoryABI, uniswapexABI } from '../contracts'
 import { retryAsync, logger, asyncBatch } from '../utils'
 import { buildId } from '../book/utils'
 
-
 export default class Indexer {
   w3: Web3
   uniswapFactory: Contract
@@ -15,9 +14,8 @@ export default class Indexer {
   lastMonitored: number
   uniswapTokenCache: { [key: string]: string }
 
-  constructor(web3: Web3) {
+  constructor(web3: Web3, block: number) {
     const {
-      FROM_BLOCK,
       UNISWAP_FACTORY_CONTRACT,
       UNISWAPEX_CONTRACT
     } = process.env
@@ -28,7 +26,7 @@ export default class Indexer {
       UNISWAP_FACTORY_CONTRACT
     )
     this.uniswapex = new web3.eth.Contract(uniswapexABI, UNISWAPEX_CONTRACT)
-    this.lastMonitored = Number(FROM_BLOCK as string)
+    this.lastMonitored = block
     this.uniswapTokenCache = {}
   }
 
@@ -87,7 +85,8 @@ export default class Indexer {
 
           // Skip USDT
           if (
-            tokenAddr.toLowerCase() == '0xdac17f958d2ee523a2206206994597c13d831ec7'
+            tokenAddr.toLowerCase() ==
+            '0xdac17f958d2ee523a2206206994597c13d831ec7'
           ) {
             logger.debug(`Indexer: Skip token USDT`)
             return
@@ -97,11 +96,15 @@ export default class Indexer {
             `Indexer: ${tokensChecked}/${total} - Monitoring token ${tokenAddr}`
           )
 
-
           const token = new this.w3.eth.Contract(ERC20ABI, tokenAddr)
 
           const events = await retryAsync(
-            this.getSafePastEvents(token, 'Transfer', this.lastMonitored, toBlock)
+            this.getSafePastEvents(
+              token,
+              'Transfer',
+              this.lastMonitored,
+              toBlock
+            )
           )
 
           logger.info(
@@ -109,7 +112,6 @@ export default class Indexer {
           )
 
           const checked: string[] = []
-          let checkedCount = 0
 
           await asyncBatch({
             elements: events,
@@ -117,25 +119,23 @@ export default class Indexer {
               const promises = eventsBatch.map(async (event: EventLog) => {
                 const tx = event.transactionHash
                 const orderId = buildId(event)
-                checkedCount += 1
 
                 if (checked.includes(tx)) {
                   return
                 }
 
                 if (await db.existOrder(orderId)) {
-                  logger.info(`Indexer: Found already indexed Token Order id: ${orderId}`)
+                  logger.info(
+                    `Indexer: Found already indexed Token Order id: ${orderId}`
+                  )
                   return
                 }
 
-                logger.debug(`Check tx: ${tx}`)
                 const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
                 const txData = fullTx ? fullTx.input : ''
 
-                logger.debug(
-                  `Indexer: ${checkedCount}/${events.length} - Check TX ${tx}`
-                )
-                if (txData.startsWith('0xa9059cbb') && txData.length == 714) { // use a variable and change to support contract wallets
+                if (txData.startsWith('0xa9059cbb') && txData.length == 714) {
+                  // use a variable and change to support contract wallets
                   logger.info(
                     `Indexer: Found token order ${token.options.address} ${tx}`
                   )
@@ -153,7 +153,7 @@ export default class Indexer {
         })
         await Promise.all(promises)
       },
-      batchSize: 1, // env.get('BATCH_SIZE'),
+      batchSize: 5, // env.get('BATCH_SIZE'),
       retryAttempts: 20
     })
 

@@ -77,7 +77,6 @@ export default class Book {
   }
 
   async decode(inputRawData: string, event: EventLog): Promise<Order> {
-
     const id = buildId(event)
     const txHash = event.transactionHash
     const data =

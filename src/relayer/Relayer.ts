@@ -69,7 +69,7 @@ export default class Relayer {
       // Fee is too low
       logger.verbose(
         `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-        estimatedGas}`
+          estimatedGas}`
       )
       return undefined
     }
