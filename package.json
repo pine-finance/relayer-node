@@ -6,10 +6,10 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "indexer": "ts-node ./src/indexOrders.ts",
-    "indexer:watch": "nodemon --exec ts-node ./src/indexOrders.ts",
-    "executor": "ts-node ./src/executeOrders.ts",
-    "executor:watch": "nodemon --exec ts-node ./src/executeOrders.ts"
+    "indexer": "LOGGER_FILE=indexOrders.log ts-node ./src/indexOrders.ts",
+    "indexer:watch": "LOGGER_FILE=indexOrders.log nodemon --exec ts-node ./src/indexOrders.ts",
+    "executor": "LOGGER_FILE=executeOrders.log ts-node ./src/executeOrders.ts",
+    "executor:watch": "LOGGER_FILE=executeOrders.log nodemon --exec ts-node ./src/executeOrders.ts"
   },
   "dependencies": {
     "@types/async-retry": "^1.4.1",

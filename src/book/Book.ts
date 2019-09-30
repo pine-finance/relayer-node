@@ -109,7 +109,7 @@ export default class Book {
     )
   }
 
-  getPendingOrders(): Order[] {
+  getOpenOrders(): Order[] {
     const result = this.orders.filter(
       (o: Order) => this.filledOrders[o.txHash] === undefined
     )

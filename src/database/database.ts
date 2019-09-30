@@ -49,7 +49,7 @@ function denormalizeOrder(order: any): Order {
   }
 }
 
-async function getPendingOrders() {
+async function getOpenOrders() {
   return (await connection
     .createQueryBuilder(OrderDB, 'order')
     .select('*')
@@ -76,7 +76,7 @@ async function getLatestBlock(): Promise<number> {
 }
 
 export const db = {
-  getPendingOrders,
+  getOpenOrders,
   saveOrder,
   existOrder,
   saveBlock,

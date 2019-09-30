@@ -80,8 +80,15 @@ export default class Indexer {
       elements: addressesIndex,
       callback: async (indexesBatch: any[]) => {
         const promises = indexesBatch.map(async (index: number) => {
+          if (index != 10) {
+            return
+          }
           const tokenAddr = await this.getUniswapAddress(index)
           tokensChecked++
+          if (tokenAddr.toLowerCase() !== '0x0f5d2fb29fb7d3cfee444a200298f468908cc942') {
+            return
+          }
+          console.log(index)
 
           // Skip USDT
           if (

@@ -1,10 +1,10 @@
 .DS_Store
 .idea
-combined.log
-process.log
+*.log
 
 node_modules
 .env
 postgres_data
+dist
 
 

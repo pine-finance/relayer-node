@@ -13,9 +13,10 @@ export default class Executor {
   }
 
   async watchRound() {
-    const allOrders = await db.getPendingOrders()
+    const openOrders = await db.getOpenOrders()
 
-    for (const order of allOrders) {
+    logger.info(`Executor: watch round ${openOrders.length} open orders`)
+    for (const order of openOrders) {
       const exists = await retryAsync(this.book.exists(order))
 
       logger.debug(`Executor: Loaded order ${order.txHash}`)
@@ -23,7 +24,7 @@ export default class Executor {
       if (exists) {
         // Check if order is ready to be filled and it's still pending
         if (await this.book.canExecute(order)) {
-          logger.verbose(`Executor: Filling order ${order.txHash}`)
+          logger.info(`Executor: Filling order ${order.txHash}`)
           // Fill order, retry only 4 times
           const result = await retryAsync(this.relayer.fillOrder(order), 4)
 
@@ -32,10 +33,10 @@ export default class Executor {
             await db.saveOrder({ ...order, executedTx: result })
           }
         } else {
-          logger.debug(`Executor: Order not ready to be filled ${order.txHash}`)
+          logger.info(`Executor: Order not ready to be filled ${order.txHash}`)
         }
       } else {
-        logger.verbose(
+        logger.info(
           `Executor: Order ${order.txHash} no long exists, removing it from pool`
         )
         // Set order as filled

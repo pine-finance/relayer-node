@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import eutils from 'ethereumjs-util'
+import * as eutils from 'ethereumjs-util'
 import Contract from 'web3/eth/contract'
 import { Account } from 'web3/eth/accounts'
 
@@ -65,11 +65,11 @@ export default class Relayer {
       `Relayer: Estimated gas for ${order.txHash} -> ${estimatedGas}`
     )
 
-    if (gasPrice * estimatedGas > order.fee) {
+    if (gasPrice * estimatedGas > Number(order.fee.toString())) {
       // Fee is too low
       logger.verbose(
         `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-          estimatedGas}`
+        estimatedGas}`
       )
       return undefined
     }
@@ -79,8 +79,8 @@ export default class Relayer {
         .executeOrder(
           order.fromToken,
           order.toToken,
-          order.minReturn,
-          order.fee,
+          order.minReturn.toString(),
+          order.fee.toString(),
           order.owner,
           witnesses
         )
