@@ -16,7 +16,6 @@ async function setupExecutor() {
   const executor = new Executor(book, relayer)
 
   async function watchOrders() {
-    console.log(Number(process.env.TIME_BETWEEN_ORDER_CHECKS))
     await executor.watchRound()
     setTimeout(
       watchOrders,

@@ -1,6 +1,7 @@
 .DS_Store
 .idea
 *.log
+*.gz
 
 node_modules
 .env
