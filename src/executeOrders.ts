@@ -18,7 +18,10 @@ async function setupExecutor() {
   async function watchOrders() {
     console.log(Number(process.env.TIME_BETWEEN_ORDER_CHECKS))
     await executor.watchRound()
-    setTimeout(watchOrders, Number(process.env.TIME_BETWEEN_ORDER_CHECKS) || 60000)
+    setTimeout(
+      watchOrders,
+      Number(process.env.TIME_BETWEEN_ORDER_CHECKS) || 60000
+    )
   }
 
   await watchOrders()

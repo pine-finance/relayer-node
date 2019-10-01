@@ -10,7 +10,6 @@ import Monitor from './monitor'
 import Book from './book'
 import { retryAsync, logger, getIndexerId } from './utils'
 
-
 async function setupIndexer() {
   await connectDB()
 

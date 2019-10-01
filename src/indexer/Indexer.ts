@@ -4,7 +4,13 @@ import Contract from 'web3/eth/contract'
 
 import { db } from '../database'
 import { ERC20ABI, uniswapexABI } from '../contracts'
-import { retryAsync, logger, asyncBatch, getTokensTotal, getTokenAddress } from '../utils'
+import {
+  retryAsync,
+  logger,
+  asyncBatch,
+  getTokensTotal,
+  getTokenAddress
+} from '../utils'
 import { buildId } from '../book/utils'
 
 export default class Indexer {
@@ -14,7 +20,10 @@ export default class Indexer {
 
   constructor(web3: Web3, block: number) {
     this.w3 = web3
-    this.uniswapex = new web3.eth.Contract(uniswapexABI, process.env.UNISWAPEX_CONTRACT)
+    this.uniswapex = new web3.eth.Contract(
+      uniswapexABI,
+      process.env.UNISWAPEX_CONTRACT
+    )
     this.lastMonitored = block
   }
 
@@ -29,9 +38,7 @@ export default class Indexer {
 
     logger.debug(`Indexer: getOrders, ${this.lastMonitored}-${toBlock}`)
 
-    const total = await retryAsync(
-      getTokensTotal()
-    )
+    const total = await retryAsync(getTokensTotal())
 
     let tokensChecked = 0
 

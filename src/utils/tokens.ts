@@ -14,7 +14,7 @@ export const MOST_USED_CONTRACTS = [
   { name: 'MKR', address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2' },
   { name: 'USDC', address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
   { name: 'Crypto.com', address: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b' },
-  { name: 'Aergo', address: '0xae31b85bfe62747d0836b82608b4830361a3d37a' },
+  { name: 'Aergo', address: '0xae31b85bfe62747d0836b82608b4830361a3d37a' }
 ]
 
 const uniswapTokenCache: { [key: string]: string } = {}
@@ -25,7 +25,8 @@ const uniswapFactory = new web3.eth.Contract(
 )
 
 export async function getTokensTotal(): Promise<number> {
-  if (getIndexerId() === IndexerTypes.MOST_USED) { // TODO: use types
+  if (getIndexerId() === IndexerTypes.MOST_USED) {
+    // TODO: use types
     return MOST_USED_CONTRACTS.length
   } else {
     return uniswapFactory.methods.tokenCount().call()
@@ -33,7 +34,8 @@ export async function getTokensTotal(): Promise<number> {
 }
 
 export async function getTokenAddress(index: number): Promise<string> {
-  if (getIndexerId() === IndexerTypes.MOST_USED) { // TODO: use types
+  if (getIndexerId() === IndexerTypes.MOST_USED) {
+    // TODO: use types
     return MOST_USED_CONTRACTS[index].address
   } else {
     if (uniswapTokenCache[index + 1] != undefined) {
