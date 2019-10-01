@@ -6,5 +6,6 @@ node_modules
 .env
 postgres_data
 dist
+.**-audit.json
 
 

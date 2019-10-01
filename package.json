@@ -6,11 +6,11 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "indexer": "LOGGER_FILE=indexOrders.log ts-node ./src/indexOrders.ts",
-    "indexer:most-used": "MOST_USED=true LOGGER_FILE=indexOrders.log ts-node ./src/indexOrders.ts",
-    "indexer:watch": "LOGGER_FILE=indexOrders.log nodemon --exec ts-node ./src/indexOrders.ts",
-    "executor": "LOGGER_FILE=executeOrders.log ts-node ./src/executeOrders.ts",
-    "executor:watch": "LOGGER_FILE=executeOrders.log nodemon --exec ts-node ./src/executeOrders.ts"
+    "indexer": "LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
+    "indexer:most-used": "MOST_USED=true LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
+    "indexer:watch": "LOGGER_FILE=indexOrders nodemon --exec ts-node ./src/indexOrders.ts",
+    "executor": "LOGGER_FILE=executeOrders ts-node ./src/executeOrders.ts",
+    "executor:watch": "LOGGER_FILE=executeOrders nodemon --exec ts-node ./src/executeOrders.ts"
   },
   "dependencies": {
     "@types/async-retry": "^1.4.1",
@@ -30,7 +30,8 @@
     "typeorm": "^0.2.19",
     "typescript": "^3.4.5",
     "web3": "^1.2.1",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.2.1"
   },
   "devDependencies": {
     "eslint": "^6.4.0",
