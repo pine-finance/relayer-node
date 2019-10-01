@@ -24,4 +24,16 @@ You can use postgress directly or pgadmin.
 
 ## Run
 
-- `npm run start` runs the backend thread that watches the blockchain and index orders
+### Index Uniswap's tokens
+
+- `npm run indexer` Index uniswap token's orders
+
+### Index Most used tokens
+
+- `npm run indexer:most-used` Index most used token's orders
+
+Tokens can be changed [here](https://github.com/UniswapEx/relayer-node/blob/master/src/utils/tokens.ts).
+
+### Execute indexed orders
+
+- `npm run executor` Execute orders when can be filled
