@@ -3,31 +3,19 @@ import { EventLog } from 'web3/types'
 import Contract from 'web3/eth/contract'
 
 import { db } from '../database'
-import { ERC20ABI, uniswapFactoryABI, uniswapexABI } from '../contracts'
-import { retryAsync, logger, asyncBatch } from '../utils'
+import { ERC20ABI, uniswapexABI } from '../contracts'
+import { retryAsync, logger, asyncBatch, getTokensTotal, getTokenAddress } from '../utils'
 import { buildId } from '../book/utils'
 
 export default class Indexer {
   w3: Web3
-  uniswapFactory: Contract
   uniswapex: Contract
   lastMonitored: number
-  uniswapTokenCache: { [key: string]: string }
 
   constructor(web3: Web3, block: number) {
-    const {
-      UNISWAP_FACTORY_CONTRACT,
-      UNISWAPEX_CONTRACT
-    } = process.env
-
     this.w3 = web3
-    this.uniswapFactory = new web3.eth.Contract(
-      uniswapFactoryABI,
-      UNISWAP_FACTORY_CONTRACT
-    )
-    this.uniswapex = new web3.eth.Contract(uniswapexABI, UNISWAPEX_CONTRACT)
+    this.uniswapex = new web3.eth.Contract(uniswapexABI, process.env.UNISWAPEX_CONTRACT)
     this.lastMonitored = block
-    this.uniswapTokenCache = {}
   }
 
   async getOrders(
@@ -42,8 +30,8 @@ export default class Indexer {
     logger.debug(`Indexer: getOrders, ${this.lastMonitored}-${toBlock}`)
 
     const total = await retryAsync(
-      this.uniswapFactory.methods.tokenCount().call()
-    ) // @TODO: use cache
+      getTokensTotal()
+    )
 
     let tokensChecked = 0
 
@@ -72,7 +60,7 @@ export default class Indexer {
     // Load events of all Uniswap tokens
 
     const addressesIndex = []
-    for (let i = 1; i <= total; i++) {
+    for (let i = 0; i < total; i++) {
       addressesIndex.push(i)
     }
 
@@ -80,7 +68,7 @@ export default class Indexer {
       elements: addressesIndex,
       callback: async (indexesBatch: any[]) => {
         const promises = indexesBatch.map(async (index: number) => {
-          const tokenAddr = await this.getUniswapAddress(index)
+          const tokenAddr = await getTokenAddress(index)
           tokensChecked++
 
           // Skip USDT
@@ -194,17 +182,5 @@ export default class Indexer {
         throw e
       }
     }
-  }
-
-  async getUniswapAddress(index: number): Promise<string> {
-    if (this.uniswapTokenCache[index] != undefined) {
-      return this.uniswapTokenCache[index]
-    }
-
-    const tokenAddr = await retryAsync(
-      this.uniswapFactory.methods.getTokenWithId(index).call()
-    )
-    this.uniswapTokenCache[index] = tokenAddr
-    return tokenAddr
   }
 }

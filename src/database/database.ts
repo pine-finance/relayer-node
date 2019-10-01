@@ -3,15 +3,16 @@ import { createConnection, Repository, Connection } from 'typeorm'
 import { join } from 'path'
 import { BN } from 'ethereumjs-util'
 
+import { IndexerTypes } from '../utils'
 import { Orders as OrderDB } from './entities/Order'
-import { BlockNumber as BlockNumberDB } from './entities/BlockNumber'
+import { Indexer as IndexerDB } from './entities/Indexer'
 import { Order } from '../book/types'
 
 const parentDir = join(__dirname, '..')
 
 let connection: Connection
 let orders: Repository<OrderDB>
-let blockNumber: Repository<BlockNumberDB>
+let indexer: Repository<IndexerDB>
 
 export async function connectDB() {
   try {
@@ -26,7 +27,7 @@ export async function connectDB() {
       synchronize: true
     })
     orders = await connection.getRepository(OrderDB)
-    blockNumber = await connection.getRepository(BlockNumberDB)
+    indexer = await connection.getRepository(IndexerDB)
   } catch (e) {
     console.log('Db error', e)
     process.exit(e)
@@ -66,12 +67,12 @@ async function existOrder(id: string) {
   return count > 0
 }
 
-async function saveBlock(block: number) {
-  blockNumber.save({ id: 0, block })
+async function saveBlock(id: IndexerTypes, block: number) {
+  indexer.save({ id, block })
 }
 
-async function getLatestBlock(): Promise<number> {
-  const res = await blockNumber.findOne({ id: 0 }) // This is fucking ugly
+async function getLatestBlock(id: IndexerTypes): Promise<number> {
+  const res = await indexer.findOne({ id })
   return res ? res.block : Number(process.env.FROM_BLOCK as string)
 }
 

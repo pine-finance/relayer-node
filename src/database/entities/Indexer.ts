@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm'
 
 @Entity()
-export class BlockNumber {
+export class Indexer {
   @PrimaryColumn({ unique: true })
   id: number = 0
 
