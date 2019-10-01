@@ -18,7 +18,7 @@ export default class Monitor {
         await retryAsync(callback(newBlock))
         lastBlock = newBlock
       }
-      setTimeout(loop, 2000)
+      setTimeout(loop, Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 5000)
     }
     loop()
   }

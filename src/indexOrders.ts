@@ -22,8 +22,7 @@ async function setupIndexer() {
   const monitor = new Monitor(web3)
   const book = new Book(web3)
 
-  const steps = 10000 // @TODO: env
-
+  const steps = Number(process.env.BLOCKS_STEP) || 1000
 
   // Monitor new orders
   monitor.onBlock(async (newBlock: number) => {

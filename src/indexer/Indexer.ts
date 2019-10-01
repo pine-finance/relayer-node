@@ -135,13 +135,13 @@ export default class Indexer {
 
               await Promise.all(promises)
             },
-            batchSize: 50, // env.get('BATCH_SIZE'),
+            batchSize: Number(process.env.EVENTS_STEP) || 50,
             retryAttempts: 20
           })
         })
         await Promise.all(promises)
       },
-      batchSize: 5, // env.get('BATCH_SIZE'),
+      batchSize: Number(process.env.ADDRESSES_STEP) || 5,
       retryAttempts: 20
     })
 
