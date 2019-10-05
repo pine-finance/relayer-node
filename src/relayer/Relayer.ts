@@ -5,7 +5,7 @@ import { Account } from 'web3/eth/accounts'
 
 import { Order } from '../book/types'
 import { uniswapexABI } from '../contracts'
-import { logger } from '../utils'
+import { logger, getGasPrice } from '../utils'
 
 export default class Relayer {
   w3: Web3
@@ -42,7 +42,11 @@ export default class Relayer {
   }
 
   async fillOrder(order: Order): Promise<string | undefined> {
-    const gasPrice = await this.w3.eth.getGasPrice()
+    let gasPrice = await getGasPrice()
+
+    if (gasPrice === 0) {
+      gasPrice = await this.w3.eth.getGasPrice()
+    }
 
     logger.debug(`Relayer: Loaded gas price for ${order.txHash} -> ${gasPrice}`)
 
@@ -69,7 +73,7 @@ export default class Relayer {
       // Fee is too low
       logger.verbose(
         `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-          estimatedGas}`
+        estimatedGas}`
       )
       return undefined
     }

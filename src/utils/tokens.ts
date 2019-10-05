@@ -14,7 +14,10 @@ export const MOST_USED_CONTRACTS = [
   { name: 'MKR', address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2' },
   { name: 'USDC', address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
   { name: 'Crypto.com', address: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b' },
-  { name: 'Aergo', address: '0xae31b85bfe62747d0836b82608b4830361a3d37a' }
+  { name: 'Aergo', address: '0xae31b85bfe62747d0836b82608b4830361a3d37a' },
+  { name: 'sETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' },
+  { name: 'SHUF', address: '0x3A9FfF453d50D4Ac52A6890647b823379ba36B9E' },
+  { name: 'WETH', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
 ]
 
 const uniswapTokenCache: { [key: string]: string } = {}
