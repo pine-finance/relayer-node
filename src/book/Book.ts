@@ -27,16 +27,17 @@ export default class Book {
   async add(data: string, event: EventLog) {
     logger.debug(`Book: Decoding raw order ${data}`)
 
-    const order = await this.decode(data, event)
-    logger.debug(
-      `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
-    )
-
-    this.orders.push(order)
     try {
+      const order = await this.decode(data, event)
+      logger.debug(
+        `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
+      )
+
+      this.orders.push(order)
+
       await db.saveOrder(order)
     } catch (e) {
-      console.log(e.message) // @TODO: revisit this
+      logger.info(`Book: Invalid order from txHash: ${event.transactionHash}, raw: ${data}. Error ${e.message}`)
     }
   }
 
