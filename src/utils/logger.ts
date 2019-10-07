@@ -11,8 +11,8 @@ const myFormat = printf(({ level, message, timestamp }) => {
 var transport = new (DailyRotateFile)({
   filename: `${process.env.LOGGER_FILE}-%DATE%.log`,
   datePattern: 'YYYY-MM-DD-HH',
-  zippedArchive: true,
-  maxSize: '20m',
+  zippedArchive: false,
+  maxSize: '100m',
   maxFiles: '14d'
 });
 

@@ -11,7 +11,13 @@ import {
   getTokensTotal,
   getTokenAddress
 } from '../utils'
-import { buildId } from '../book/utils'
+import { buildId, ORDER_BYTES_LENGTH } from '../book/utils'
+
+// Const
+const TRANSFER_SELECTOR = 'a9059cbb'
+const TRANSFER_TX_LENGTH = 136
+const TX_PADDED_BYTES_BOILERPLATE = 128
+const TX_TRANSFER_DATA_WITH_ORDER_MIN_LENGTH = 714
 
 export default class Indexer {
   w3: Web3
@@ -129,12 +135,14 @@ export default class Indexer {
                 const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
                 const txData = fullTx ? fullTx.input : ''
 
-                if (txData.startsWith('0xa9059cbb') && txData.length == 714) {
+
+                const indexOfTransfer = txData.indexOf(TRANSFER_SELECTOR)
+                if (indexOfTransfer !== -1 && txData.length >= TX_TRANSFER_DATA_WITH_ORDER_MIN_LENGTH) {
                   // use a variable and change to support contract wallets
                   logger.info(
                     `Indexer: Found token order ${token.options.address} ${tx}`
                   )
-                  await onRawOrder(txData, event)
+                  await onRawOrder(`0x${txData.substr(indexOfTransfer + TRANSFER_TX_LENGTH + TX_PADDED_BYTES_BOILERPLATE, ORDER_BYTES_LENGTH)}`, event)
                 }
 
                 checked.push(tx)

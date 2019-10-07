@@ -6,7 +6,7 @@ import { db } from '../database'
 import { uniswapexABI } from '../contracts'
 import { retryAsync, logger } from '../utils'
 import { Order } from './types'
-import { buildId } from './utils'
+import { buildId, ORDER_BYTES_LENGTH } from './utils'
 
 export default class Book {
   w3: Web3
@@ -80,8 +80,8 @@ export default class Book {
     const id = buildId(event)
     const txHash = event.transactionHash
     const data =
-      inputRawData.length > 448
-        ? `0x${inputRawData.substr(-448)}`
+      inputRawData.length > ORDER_BYTES_LENGTH
+        ? `0x${inputRawData.substr(-ORDER_BYTES_LENGTH)}`
         : inputRawData
 
     logger.debug(`Book: Decodeding ${txHash}, raw: ${inputRawData}`)
