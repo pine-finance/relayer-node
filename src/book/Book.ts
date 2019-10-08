@@ -42,22 +42,26 @@ export default class Book {
   }
 
   async exists(order: Order): Promise<boolean> {
-    const exists = await this.uniswapex.methods
-      .existOrder(
-        order.fromToken,
-        order.toToken,
-        order.minReturn.toString(),
-        order.fee.toString(),
-        order.owner,
-        order.witness
+    try {
+      const exists = await this.uniswapex.methods
+        .existOrder(
+          order.fromToken,
+          order.toToken,
+          order.minReturn.toString(),
+          order.fee.toString(),
+          order.owner,
+          order.witness
+        )
+        .call()
+
+      logger.debug(
+        `Book: Order ${order.txHash} does${exists ? '' : ' not'} exists`
       )
-      .call()
 
-    logger.debug(
-      `Book: Order ${order.txHash} does${exists ? '' : ' not'} exists`
-    )
-
-    return exists
+      return exists
+    } catch (e) {
+      return false
+    }
   }
 
   async isReady(order: Order): Promise<boolean> {
