@@ -70,12 +70,15 @@ export default class Relayer {
     )
 
     if (gasPrice * estimatedGas > Number(order.fee.toString())) {
-      // Fee is too low
-      logger.verbose(
-        `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
-        estimatedGas}`
-      )
-      return undefined
+      gasPrice = await this.w3.eth.getGasPrice()
+      if (gasPrice * estimatedGas > Number(order.fee.toString())) {
+        // Fee is too low
+        logger.info(
+          `Relayer: Skip, fee is not enought ${order.txHash} cost: ${gasPrice *
+          estimatedGas}`
+        )
+        return undefined
+      }
     }
 
     try {

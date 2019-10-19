@@ -4,7 +4,7 @@ import Contract from 'web3/eth/contract'
 
 import { db } from '../database'
 import { uniswapexABI } from '../contracts'
-import { retryAsync, logger } from '../utils'
+import { logger } from '../utils'
 import { Order } from './types'
 import { buildId, ORDER_BYTES_LENGTH } from './utils'
 
@@ -60,6 +60,10 @@ export default class Book {
 
       return exists
     } catch (e) {
+      if (e.message.indexOf('Invalid JSON RPC response') !== -1) {
+        throw new Error('invalid RPC call')
+      }
+
       return false
     }
   }
@@ -110,7 +114,7 @@ export default class Book {
 
   async canExecute(order: Order): Promise<boolean> {
     return (
-      (await retryAsync(this.isReady(order))) && (await this.isPending(order))
+      (await this.isReady(order)) && (await this.isPending(order))
     )
   }
 

@@ -29,7 +29,6 @@ const uniswapFactory = new web3.eth.Contract(
 
 export async function getTokensTotal(): Promise<number> {
   if (getIndexerId() === IndexerTypes.MOST_USED) {
-    // TODO: use types
     return MOST_USED_CONTRACTS.length
   } else {
     return uniswapFactory.methods.tokenCount().call()
