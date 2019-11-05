@@ -1,7 +1,6 @@
 import Web3 from 'web3'
 
 import { getIndexerId, IndexerTypes } from './process'
-import { retryAsync } from './retry'
 import { uniswapFactoryABI } from '../contracts'
 
 export const MOST_USED_CONTRACTS = [
@@ -44,9 +43,8 @@ export async function getTokenAddress(index: number): Promise<string> {
       return uniswapTokenCache[index + 1]
     }
 
-    const tokenAddr = await retryAsync(
-      uniswapFactory.methods.getTokenWithId(index + 1).call()
-    )
+    const tokenAddr = await uniswapFactory.methods.getTokenWithId(index + 1).call()
+
     uniswapTokenCache[index + 1] = tokenAddr
     return tokenAddr
   }

@@ -8,7 +8,7 @@ import { connectDB, db } from './database'
 import Indexer from './indexer'
 import Monitor from './monitor'
 import Book from './book'
-import { retryAsync, logger, getIndexerId } from './utils'
+import { logger, getIndexerId } from './utils'
 
 async function setupIndexer() {
   await connectDB()
@@ -44,7 +44,7 @@ async function setupIndexer() {
       await indexer.getOrders(
         toBlock,
         async (rawOrder: string, event: EventLog) => {
-          await retryAsync(book.add(rawOrder, event))
+          await book.add(rawOrder, event)
         }
       )
       await db.saveBlock(indexerId, toBlock)

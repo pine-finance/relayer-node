@@ -5,7 +5,6 @@ import Contract from 'web3/eth/contract'
 import { db } from '../database'
 import { ERC20ABI, uniswapexABI } from '../contracts'
 import {
-  retryAsync,
   logger,
   asyncBatch,
   getTokensTotal,
@@ -44,18 +43,16 @@ export default class Indexer {
 
     logger.debug(`Indexer: getOrders, ${this.lastMonitored}-${toBlock}`)
 
-    const total = await retryAsync(getTokensTotal())
+    const total = await getTokensTotal()
 
     let tokensChecked = 0
 
     // Load ETH orders
-    const events = await retryAsync(
-      this.getSafePastEvents(
-        this.uniswapex,
-        'DepositETH',
-        this.lastMonitored,
-        toBlock
-      )
+    const events = await this.getSafePastEvents(
+      this.uniswapex,
+      'DepositETH',
+      this.lastMonitored,
+      toBlock
     )
 
     logger.debug(`Indexer: Found ${events.length} ETH orders events`)
@@ -99,13 +96,11 @@ export default class Indexer {
 
           const token = new this.w3.eth.Contract(ERC20ABI, tokenAddr)
 
-          const events = await retryAsync(
-            this.getSafePastEvents(
-              token,
-              'Transfer',
-              this.lastMonitored,
-              toBlock
-            )
+          const events = await this.getSafePastEvents(
+            token,
+            'Transfer',
+            this.lastMonitored,
+            toBlock
           )
 
           logger.info(
@@ -132,7 +127,7 @@ export default class Indexer {
                   return
                 }
 
-                const fullTx = await retryAsync(this.w3.eth.getTransaction(tx))
+                const fullTx = await this.w3.eth.getTransaction(tx)
                 const txData = fullTx ? fullTx.input : ''
 
 
