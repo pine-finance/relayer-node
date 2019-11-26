@@ -69,17 +69,21 @@ export default class Book {
   }
 
   async isReady(order: Order): Promise<boolean> {
-    const ready = await this.uniswapex.methods
-      .canExecuteOrder(
-        order.fromToken,
-        order.toToken,
-        order.minReturn.toString(),
-        order.fee.toString(),
-        order.owner,
-        order.witness
-      )
-      .call()
-
+    let ready
+    try {
+      ready = await this.uniswapex.methods
+        .canExecuteOrder(
+          order.fromToken,
+          order.toToken,
+          order.minReturn.toString(),
+          order.fee.toString(),
+          order.owner,
+          order.witness
+        )
+        .call()
+    } catch (e) {
+      logger.debug(`Book: Failed at canExecuteOrder for ${order.txHash}: ${e.message}`)
+    }
     logger.debug(`Book: Order ${order.txHash} is ${ready ? '' : 'not'} ready`)
 
     return ready
