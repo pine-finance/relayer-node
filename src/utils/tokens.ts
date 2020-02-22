@@ -16,7 +16,10 @@ export const MOST_USED_CONTRACTS = [
   { name: 'Aergo', address: '0xae31b85bfe62747d0836b82608b4830361a3d37a' },
   { name: 'sETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' },
   { name: 'SHUF', address: '0x3A9FfF453d50D4Ac52A6890647b823379ba36B9E' },
-  { name: 'WETH', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' }
+  { name: 'WETH', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
+  { name: 'CBIX7', address: '0xcf8f9555d55ce45a3a33a81d6ef99a2a2e71dee2' },
+  { name: 'SUSD', address: '0x57ab1e02fee23774580c119740129eac7081e9d3' },
+  { name: 'SETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' }
 ]
 
 const uniswapTokenCache: { [key: string]: string } = {}
