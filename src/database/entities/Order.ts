@@ -34,7 +34,7 @@ export class Orders {
   @Index()
   txHash: string = ''
 
-  @Column({ nullable: true })
+  @Column({ type: String, nullable: true })
   @Index()
-  executedTx?: string = ''
+  executedTx?: string | null = ''
 }

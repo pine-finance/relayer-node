@@ -10,5 +10,5 @@ export type Order = {
   secret: string
   witness: string
   txHash: string
-  executedTx?: string
+  executedTx?: string | null
 }

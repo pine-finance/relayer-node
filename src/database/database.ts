@@ -58,6 +58,11 @@ async function getOpenOrders() {
     .getRawMany()).map(denormalizeOrder)
 }
 
+async function getOrdersByTxHash(txHash: string) {
+  const foundOrders = await orders.find({ txHash })
+  return foundOrders.map(denormalizeOrder)
+}
+
 async function saveOrder(order: Order) {
   return orders.save(normalizeOrder(order))
 }
@@ -77,6 +82,7 @@ async function getLatestBlock(id: IndexerTypes): Promise<number> {
 }
 
 export const db = {
+  getOrdersByTxHash,
   getOpenOrders,
   saveOrder,
   existOrder,

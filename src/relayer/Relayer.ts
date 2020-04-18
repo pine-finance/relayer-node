@@ -54,16 +54,23 @@ export default class Relayer {
 
     logger.debug(`Relayer: Witnesses for ${order.txHash} -> ${witnesses}`)
 
-    const estimatedGas = await this.uniswapex.methods
-      .executeOrder(
-        order.fromToken,
-        order.toToken,
-        order.minReturn.toString(),
-        order.fee.toString(),
-        order.owner,
-        witnesses
-      )
-      .estimateGas({ from: this.account.address })
+    let estimatedGas = 0
+    try {
+      estimatedGas = await this.uniswapex.methods
+        .executeOrder(
+          order.fromToken,
+          order.toToken,
+          order.minReturn.toString(),
+          order.fee.toString(),
+          order.owner,
+          witnesses
+        )
+        .estimateGas({ from: this.account.address })
+    } catch (e) {
+      logger.info(`Could not estimate gas for order with txHash ${order.txHash}. Error: ${e.message}`)
+      return undefined
+
+    }
 
     logger.debug(
       `Relayer: Estimated gas for ${order.txHash} -> ${estimatedGas}`

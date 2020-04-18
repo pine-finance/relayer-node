@@ -42,8 +42,10 @@ export default class Book {
   }
 
   async exists(order: Order): Promise<boolean> {
+    const ethAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase()
+
     try {
-      const exists = await this.uniswapex.methods
+      let exists = await this.uniswapex.methods
         .existOrder(
           order.fromToken,
           order.toToken,
@@ -54,9 +56,12 @@ export default class Book {
         )
         .call()
 
-      logger.debug(
-        `Book: Order ${order.txHash} does${exists ? '' : ' not'} exists`
-      )
+      if (exists) {
+        // Check if from and to tokens are valid address
+        const isFromTokenContract = await this.w3.eth.getCode(order.fromToken)
+        const isToTokenContract = await this.w3.eth.getCode(order.toToken)
+        exists = (isFromTokenContract !== '0x' || order.fromToken.toLowerCase() === ethAddress) && (isToTokenContract !== '0x' || order.toToken.toLowerCase() === ethAddress)
+      }
 
       return exists
     } catch (e) {

@@ -168,10 +168,11 @@ export default class Indexer {
     toBlock: number
   ): Promise<EventLog[]> {
     try {
-      return await contract.getPastEvents(name, {
+      const res = await contract.getPastEvents(name, {
         fromBlock: fromBlock,
         toBlock: toBlock
       })
+      return res
     } catch (e) {
       if (
         fromBlock != toBlock &&

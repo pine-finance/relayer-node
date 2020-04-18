@@ -5,7 +5,8 @@ import { uniswapFactoryABI } from '../contracts'
 
 export const MOST_USED_CONTRACTS = [
   { name: 'MANA', address: '0x0f5d2fb29fb7d3cfee444a200298f468908cc942' },
-  { name: 'DAI', address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359' },
+  { name: 'SAI', address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359' },
+  { name: 'DAI', address: '0x6b175474e89094c44da98b954eedeac495271d0f' },
   { name: 'Tether', address: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
   { name: 'BNB', address: '0xB8c77482e45F1F44dE1745F52C74426C631bDD52' },
   { name: 'Bitfinex', address: '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3' },
@@ -19,7 +20,9 @@ export const MOST_USED_CONTRACTS = [
   { name: 'WETH', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { name: 'CBIX7', address: '0xcf8f9555d55ce45a3a33a81d6ef99a2a2e71dee2' },
   { name: 'SUSD', address: '0x57ab1e02fee23774580c119740129eac7081e9d3' },
-  { name: 'SETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' }
+  { name: 'SETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' },
+  { name: 'Opyn ETH Put $150 04/24/20 (oETH $150...)', address: '0xaeFc7B368F7b536C9E5e3F342BF534931cE58584' },
+  { name: 'HEX', address: '0x2b591e99afe9f32eaa6214f7b7629768c40eeb39' }
 ]
 
 const uniswapTokenCache: { [key: string]: string } = {}
