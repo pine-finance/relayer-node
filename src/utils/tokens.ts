@@ -22,7 +22,14 @@ export const MOST_USED_CONTRACTS = [
   { name: 'SUSD', address: '0x57ab1e02fee23774580c119740129eac7081e9d3' },
   { name: 'SETH', address: '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb' },
   { name: 'Opyn ETH Put $150 04/24/20 (oETH $150...)', address: '0xaeFc7B368F7b536C9E5e3F342BF534931cE58584' },
-  { name: 'HEX', address: '0x2b591e99afe9f32eaa6214f7b7629768c40eeb39' }
+  { name: 'HEX', address: '0x2b591e99afe9f32eaa6214f7b7629768c40eeb39' },
+  { name: 'UBT', address: '0x8400d94a5cb0fa0d041a3788e395285d61c9ee5e' },
+  { name: 'MINDS', address: '0xb26631c6dda06ad89b93c71400d25692de89c068' },
+  { name: 'STAKE', address: '0x0ae055097c6d159879521c384f1d2123d1f195e6' },
+  { name: 'STA', address: '0xa7DE087329BFcda5639247F96140f9DAbe3DeED1' },
+  { name: "CMRA", address: '0x37737ad7e32ed440c312910cfc4a2e4d52867caf' },
+  { name: "FOT", address: '0xD8595ac2836B7a8040f046E751B42088436B6365' },
+  { name: "NEXO", address: "0xb62132e35a6c13ee1ee0f84dc5d40bad8d815206" }
 ]
 
 const uniswapTokenCache: { [key: string]: string } = {}
