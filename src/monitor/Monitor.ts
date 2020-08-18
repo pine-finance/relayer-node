@@ -1,24 +1,25 @@
-import Web3 from 'web3'
+import { JsonRpcProvider } from '@ethersproject/providers'
+
 
 import { logger } from '../utils'
 
 export default class Monitor {
-  w3: Web3
+  provider: JsonRpcProvider
   timeBetweenPendingChecks: number
 
-  constructor(w3: Web3) {
-    this.w3 = w3
+  constructor(provider: JsonRpcProvider) {
+    this.provider = provider
     this.timeBetweenPendingChecks = Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 5000
 
   }
 
   async onBlock(callback: (blockNumber: number) => Promise<any>) {
     let lastBlock = 0
-    const { w3, timeBetweenPendingChecks } = this
+    const { provider, timeBetweenPendingChecks } = this
 
     async function loop() {
       try {
-        const newBlock = await w3.eth.getBlockNumber()
+        const newBlock = await provider.getBlockNumber()
         if (newBlock > lastBlock) {
           await callback(newBlock)
           lastBlock = newBlock

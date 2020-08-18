@@ -38,7 +38,7 @@ function normalizeOrder(order: Order) {
   return {
     ...order,
     minReturn: order.minReturn.toString(),
-    fee: order.fee.toString()
+    amount: order.amount.toString()
   }
 }
 
@@ -46,7 +46,7 @@ function denormalizeOrder(order: any): Order {
   return {
     ...order,
     minReturn: new BN(order.minReturn),
-    fee: new BN(order.fee)
+    amount: new BN(order.amount),
   }
 }
 
@@ -54,12 +54,12 @@ async function getOpenOrders() {
   return (await connection
     .createQueryBuilder(OrderDB, 'order')
     .select('*')
-    .where('order.executedTx is NULL')
+    .where('order.executedTxHash is NULL')
     .getRawMany()).map(denormalizeOrder)
 }
 
-async function getOrdersByTxHash(txHash: string) {
-  const foundOrders = await orders.find({ txHash })
+async function getOrdersByTxHash(createdTxHash: string) {
+  const foundOrders = await orders.find({ createdTxHash })
   return foundOrders.map(denormalizeOrder)
 }
 

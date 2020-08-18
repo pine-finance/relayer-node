@@ -1,13 +1,12 @@
+import { JsonRpcProvider } from '@ethersproject/providers'
 import dotenv from 'dotenv'
 dotenv.config()
-
-import Web3 from 'web3'
-import { EventLog } from 'web3/types'
 
 import { connectDB, db } from './database'
 import Indexer from './indexer'
 import Monitor from './monitor'
 import Book from './book'
+import { Order } from './book/types'
 import { logger, getIndexerId } from './utils'
 
 async function setupIndexer() {
@@ -16,12 +15,13 @@ async function setupIndexer() {
   const indexerId = getIndexerId()
   let block = await db.getLatestBlock(indexerId)
 
-  const web3 = new Web3(process.env.WEB3_HTTP_RPC_URL)
-  const indexer = new Indexer(web3, block)
-  const monitor = new Monitor(web3)
-  const book = new Book(web3)
+  const provider = new JsonRpcProvider(process.env.HTTP_RPC_URL, process.env.NETWORK)
 
-  const steps = Number(process.env.BLOCKS_STEP) || 1000
+  const indexer = new Indexer(block)
+  const monitor = new Monitor(provider)
+  const book = new Book(provider)
+
+  let steps = Number(process.env.BLOCKS_STEP) || 1000
 
   // Monitor new orders
   monitor.onBlock(async (newBlock: number) => {
@@ -32,6 +32,7 @@ async function setupIndexer() {
 
       // Stop the loop if last block is achieved
       if (fromBlock >= newBlock) {
+        steps = 1
         continue
       }
 
@@ -42,12 +43,13 @@ async function setupIndexer() {
       }
 
       await indexer.getOrders(
+        fromBlock,
         toBlock,
-        async (rawOrder: string, event: EventLog) => {
-          await book.add(rawOrder, event)
+        async (rawOrder: Order) => {
+          await book.add(rawOrder)
         }
       )
-      await db.saveBlock(indexerId, toBlock)
+      await db.saveBlock(indexerId, fromBlock)
     }
     block = newBlock
   })

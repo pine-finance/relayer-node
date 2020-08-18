@@ -1,65 +1,30 @@
-import Web3 from 'web3'
-import { EventLog } from 'web3/types'
-import Contract from 'web3/eth/contract'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { db } from '../database'
-import { uniswapexABI } from '../contracts'
-import { logger } from '../utils'
+import { logger, api } from '../utils'
 import { Order } from './types'
-import { buildId, ORDER_BYTES_LENGTH } from './utils'
 
 export default class Book {
-  w3: Web3
-  uniswapex: Contract
+  provider: JsonRpcProvider
   orders: Order[]
   filledOrders: { [key: string]: string }
 
-  constructor(w3: Web3) {
-    this.w3 = w3
-    this.uniswapex = new w3.eth.Contract(
-      uniswapexABI,
-      process.env.UNISWAPEX_CONTRACT
-    )
+  constructor(provider: JsonRpcProvider) {
+    this.provider = provider
     this.orders = []
     this.filledOrders = {}
-  }
-
-  async add(data: string, event: EventLog) {
-    logger.debug(`Book: Decoding raw order ${data}`)
-
-    try {
-      const order = await this.decode(data, event)
-      logger.debug(
-        `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
-      )
-
-      this.orders.push(order)
-
-      await db.saveOrder(order)
-    } catch (e) {
-      logger.info(`Book: Invalid order from txHash: ${event.transactionHash}, raw: ${data}. Error ${e.message}`)
-    }
   }
 
   async exists(order: Order): Promise<boolean> {
     const ethAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase()
 
     try {
-      let exists = await this.uniswapex.methods
-        .existOrder(
-          order.fromToken,
-          order.toToken,
-          order.minReturn.toString(),
-          order.fee.toString(),
-          order.owner,
-          order.witness
-        )
-        .call()
+      let exists = await api.isOrderStillOpen(order.id)
 
       if (exists) {
         // Check if from and to tokens are valid address
-        const isFromTokenContract = await this.w3.eth.getCode(order.fromToken)
-        const isToTokenContract = await this.w3.eth.getCode(order.toToken)
+        const isFromTokenContract = await this.provider.getCode(order.fromToken)
+        const isToTokenContract = await this.provider.getCode(order.toToken)
         exists = (isFromTokenContract !== '0x' || order.fromToken.toLowerCase() === ethAddress) && (isToTokenContract !== '0x' || order.toToken.toLowerCase() === ethAddress)
       }
 
@@ -69,87 +34,31 @@ export default class Book {
         throw new Error('invalid RPC call')
       }
 
-      return false
+      if (e.message.indexOf('provider or signer is needed to resolve ENS names') !== -1) {
+        throw new Error(e.message)
+      }
+
+      return true
     }
   }
 
-  async isReady(order: Order): Promise<boolean> {
-    let ready
+  setFilled(order: Order, executedTxHashHash: string): void {
+    logger.debug(`Book: Order ${order.createdTxHash} was filled by ${executedTxHashHash}`)
+
+    this.filledOrders[order.createdTxHash] = executedTxHashHash
+  }
+
+  async add(order: Order) {
     try {
-      ready = await this.uniswapex.methods
-        .canExecuteOrder(
-          order.fromToken,
-          order.toToken,
-          order.minReturn.toString(),
-          order.fee.toString(),
-          order.owner,
-          order.witness
-        )
-        .call()
+      logger.debug(
+        `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
+      )
+
+      this.orders.push(order)
+
+      await db.saveOrder(order)
     } catch (e) {
-      logger.debug(`Book: Failed at canExecuteOrder for ${order.txHash}: ${e.message}`)
+      logger.info(`Book: Invalid order from createdTxHash: ${order.createdTxHash}. Error ${e.message}`)
     }
-    logger.debug(`Book: Order ${order.txHash} is ${ready ? '' : 'not'} ready`)
-
-    return ready
-  }
-
-  async decode(inputRawData: string, event: EventLog): Promise<Order> {
-    const id = buildId(event)
-    const txHash = event.transactionHash
-    const data =
-      inputRawData.length > ORDER_BYTES_LENGTH
-        ? `0x${inputRawData.substr(-ORDER_BYTES_LENGTH)}`
-        : inputRawData
-
-    logger.debug(`Book: Decodeding ${txHash}, raw: ${inputRawData}`)
-    const decoded = await this.uniswapex.methods.decodeOrder(`${data}`).call()
-
-    logger.debug(`Book: Decoded ${txHash} id        ${id}`)
-    logger.debug(`Book: Decoded ${txHash} fromToken ${decoded.fromToken}`)
-    logger.debug(`Book: Decoded ${txHash} toToken   ${decoded.toToken}`)
-    logger.debug(`Book: Decoded ${txHash} minReturn ${decoded.minReturn}`)
-    logger.debug(`Book: Decoded ${txHash} fee       ${decoded.fee}`)
-    logger.debug(`Book: Decoded ${txHash} owner     ${decoded.owner}`)
-    logger.debug(`Book: Decoded ${txHash} secret    ${decoded.secret}`)
-    logger.debug(`Book: Decoded ${txHash} witness   ${decoded.witness}`)
-
-    return {
-      ...decoded,
-      id,
-      txHash
-    }
-  }
-
-  async canExecute(order: Order): Promise<boolean> {
-    return (
-      (await this.isReady(order)) && (await this.isPending(order))
-    )
-  }
-
-  getOpenOrders(): Order[] {
-    const result = this.orders.filter(
-      (o: Order) => this.filledOrders[o.txHash] === undefined
-    )
-
-    logger.debug(`Order manager: Retrieving ${result.length} pending orders`)
-
-    return result
-  }
-
-  isPending(order: Order): boolean {
-    const result = this.filledOrders[order.txHash] === undefined
-
-    logger.debug(
-      `Book: Order ${order.txHash} is ${result ? '' : 'not'} pending`
-    )
-
-    return result
-  }
-
-  setFilled(order: Order, executedTx: string): void {
-    logger.debug(`Book: Order ${order.txHash} was filled by ${executedTx}`)
-
-    this.filledOrders[order.txHash] = executedTx
   }
 }

@@ -6,6 +6,9 @@ export class Orders {
   id: string = ''
 
   @Column()
+  module: string = ''
+
+  @Column()
   @Index()
   fromToken: string = ''
 
@@ -17,6 +20,9 @@ export class Orders {
   minReturn: string = ''
 
   @Column()
+  amount: string = ''
+
+  @Column({ type: String, nullable: true })
   @Index()
   fee: string = ''
 
@@ -32,9 +38,9 @@ export class Orders {
 
   @Column()
   @Index()
-  txHash: string = ''
+  createdTxHash: string = ''
 
   @Column({ type: String, nullable: true })
   @Index()
-  executedTx?: string | null = ''
+  executedTxHash?: string | null = ''
 }
