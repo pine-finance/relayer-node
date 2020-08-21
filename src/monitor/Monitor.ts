@@ -9,8 +9,7 @@ export default class Monitor {
 
   constructor(provider: JsonRpcProvider) {
     this.provider = provider
-    this.timeBetweenPendingChecks = Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 5000
-
+    this.timeBetweenPendingChecks = Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 15000
   }
 
   async onBlock(callback: (blockNumber: number) => Promise<any>) {
@@ -27,10 +26,8 @@ export default class Monitor {
         setTimeout(loop, timeBetweenPendingChecks)
       } catch (e) {
         logger.info(e.message)
-        if (e.message.indexOf('Invalid JSON RPC response') !== -1) {
-          logger.info(`Retrying loop in ${timeBetweenPendingChecks * 10 / 1000 / 60} minutes....`)
-          setTimeout(loop, timeBetweenPendingChecks * 10)
-        }
+        logger.info(`Retrying loop in ${timeBetweenPendingChecks * 10 / 1000 / 60} minutes....`)
+        setTimeout(loop, timeBetweenPendingChecks * 10)
       }
     }
     loop()

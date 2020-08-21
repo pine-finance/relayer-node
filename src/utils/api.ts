@@ -17,10 +17,10 @@ class API {
     this.url = url
   }
 
-  async getOpenOrdersFromBlock(fromBlock: number): Promise<Order[]> {
+  async getOpenOrdersBetweenBlock(fromBlock: number, toBlock: number): Promise<Order[]> {
     const query = `
-      query getOrdersFromBlock($fromBlock: BigInt) {
-        orders(where:{blockNumber_gte:$fromBlock,status:open}) {
+      query getOrdersFromBlock($fromBlock: BigInt, $toBlock: BigInt) {
+        orders(where:{blockNumber_gte:$fromBlock,blockNumber_lte:$toBlock,status:open}) {
           id
           fromToken
           toToken
@@ -38,7 +38,7 @@ class API {
       const res = await fetch(this.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { fromBlock: fromBlock - fromBlock } })
+        body: JSON.stringify({ query, variables: { fromBlock: fromBlock - 40, toBlock } }) // Get some from re-orgs
       })
 
       const { data } = await res.json()

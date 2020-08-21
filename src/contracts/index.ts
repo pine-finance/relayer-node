@@ -4,11 +4,11 @@ export const UNISWAPEX_ADDRESSES = {
 }
 
 export const UNISWAP_V1_HANDLER_ADDRESSES = {
-  1: '0x87b70e632db1251aa8caa331be3cfa19bb50b130',
-  4: '0x87b70e632db1251aa8caa331be3cfa19bb50b130'
+  1: '0x9d8453c495ac68cf717179d5ad9235f5eebf387d',
+  4: '0x9d8453c495ac68cf717179d5ad9235f5eebf387d'
 }
 
 export const UNISWAP_V2_HANDLER_ADDRESSES = {
-  1: '0x530880d84a89e7a2ff109013a33d783831211d9d',
-  4: '0x530880d84a89e7a2ff109013a33d783831211d9d'
+  1: '0xbf95dd8dfbccdba150b4bc3d227a80c53acd3e0f',
+  4: '0xbf95dd8dfbccdba150b4bc3d227a80c53acd3e0f'
 }

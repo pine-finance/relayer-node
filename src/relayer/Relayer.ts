@@ -125,14 +125,38 @@ export default class Relayer {
 
     logger.debug(`Relayer: Witnesses for ${order.createdTxHash} -> ${witnesses}`)
 
+    let handler = this.uniswapexV2Handler.address
+    try {
+      const [uniswapV1Res, uniswapV2Res] = await Promise.all([
+        this.uniswapexV1Handler.simulate(order.fromToken, order.toToken, order.amount, order.minReturn, this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE])),
+        this.uniswapexV2Handler.simulate(order.fromToken, order.toToken, order.amount, order.minReturn, this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE]))
+      ])
+      console.log(uniswapV1Res, uniswapV2Res)
+
+      let bought = ethers.BigNumber.from(0)
+      if (uniswapV1Res[0]) {
+        logger.info(`Can be executed with uniswap v1`)
+        handler = this.uniswapexV1Handler.address
+        bought = uniswapV1Res[1]
+      }
+
+      if (uniswapV2Res[0] && bought.lte(uniswapV2Res[2])) {
+        logger.info(`Can be executed with uniswap v2`)
+        handler = this.uniswapexV2Handler.address
+      }
+    } catch (e) {
+      logger.debug(`Relayer: failed to get best handler: ${e.message}`)
+    }
+
     let estimatedGas = ethers.BigNumber.from(0)
+
     const params = [
       order.module,
       order.fromToken,
       order.owner,
       this.abiCoder.encode(['address', 'uint256'], [order.toToken, order.minReturn.toString()]),
       witnesses,
-      this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE])
+      this.abiCoder.encode(['address', 'address', 'uint256'], [handler, this.account.address, FEE])
     ]
     try {
       estimatedGas = await this.uniswapex.estimateGas.executeOrder(
@@ -160,18 +184,18 @@ export default class Relayer {
     }
 
     try {
-      const txHash = await this.uniswapex.executeOrder(
+      const tx = await this.uniswapex.executeOrder(
         ...params,
         {
           from: this.account.address,
-          gas: estimatedGas,
+          gasLimit: estimatedGas,
           gasPrice: gasPrice
         })
 
       logger.info(
-        `Relayer: Filled ${order.createdTxHash} order, executedTxHash: ${txHash}`
+        `Relayer: Filled ${order.createdTxHash} order, executedTxHash: ${tx.hash}`
       )
-      return txHash
+      return tx.hash
     } catch (e) {
       logger.warn(`Relayer: Error filling order ${order.createdTxHash}: ${e.message}`)
       return undefined

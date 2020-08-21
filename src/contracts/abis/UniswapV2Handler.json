@@ -120,6 +120,50 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_fromToken",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_toToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minReturn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
+      }
+    ],
+    "name": "simulate",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "stateMutability": "payable",
     "type": "receive"
   }

@@ -32,7 +32,7 @@ async function setupIndexer() {
 
       // Stop the loop if last block is achieved
       if (fromBlock >= newBlock) {
-        steps = 1
+        steps = 10 // Go each 20 blocks then
         continue
       }
 
@@ -49,7 +49,7 @@ async function setupIndexer() {
           await book.add(rawOrder)
         }
       )
-      await db.saveBlock(indexerId, fromBlock)
+      await db.saveBlock(indexerId, toBlock)
     }
     block = newBlock
   })

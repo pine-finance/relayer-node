@@ -25,7 +25,7 @@ export default class Indexer {
 
     logger.debug(`Indexer: getOrders, ${this.lastMonitored}-${toBlock}`)
 
-    const orders = await api.getOpenOrdersFromBlock(fromBlock)
+    const orders = await api.getOpenOrdersBetweenBlock(fromBlock, toBlock)
 
     logger.debug(`Indexer: Found new ${orders.length} orders`)
 
