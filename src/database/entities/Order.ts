@@ -10,17 +10,17 @@ export class Orders {
 
   @Column()
   @Index()
-  fromToken: string = ''
+  inputToken: string = ''
 
   @Column()
   @Index()
-  toToken: string = ''
+  outputToken: string = ''
 
   @Column()
   minReturn: string = ''
 
   @Column()
-  amount: string = ''
+  inputAmount: string = ''
 
   @Column({ type: String, nullable: true })
   @Index()

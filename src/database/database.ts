@@ -38,7 +38,7 @@ function normalizeOrder(order: Order) {
   return {
     ...order,
     minReturn: order.minReturn.toString(),
-    amount: order.amount.toString()
+    inputAmount: order.inputAmount.toString()
   }
 }
 
@@ -46,7 +46,7 @@ function denormalizeOrder(order: any): Order {
   return {
     ...order,
     minReturn: new BN(order.minReturn),
-    amount: new BN(order.amount),
+    inputAmount: new BN(order.inputAmount),
   }
 }
 

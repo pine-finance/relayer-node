@@ -10,6 +10,7 @@
     "indexer:most-used": "MOST_USED=true LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
     "indexer:watch": "LOGGER_FILE=indexOrders nodemon --exec ts-node ./src/indexOrders.ts",
     "executor": "LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:find-best": "FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:watch": "LOGGER_FILE=executeOrders nodemon --exec ts-node ./src/executeOrders.ts"
   },
   "dependencies": {
@@ -45,5 +46,10 @@
     "nodemon": "^1.19.0",
     "prettier": "^1.17.1",
     "source-map-support": "^0.5.12"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "singleQuote": true,
+    "semi": false
   }
 }

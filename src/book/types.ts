@@ -3,10 +3,10 @@ import { BigNumber } from 'ethers'
 export type Order = {
   id: string
   module: string
-  fromToken: string
-  toToken: string
+  inputToken: string
+  outputToken: string
   minReturn: BigNumber
-  amount: BigNumber
+  inputAmount: BigNumber
   owner: string
   secret: string
   witness: string

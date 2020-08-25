@@ -22,14 +22,14 @@ class API {
       query getOrdersFromBlock($fromBlock: BigInt, $toBlock: BigInt) {
         orders(where:{blockNumber_gte:$fromBlock,blockNumber_lte:$toBlock,status:open}) {
           id
-          fromToken
-          toToken
+          inputToken
+          outputToken
           minReturn
           owner
           secret
           witness
           module
-          amount
+          inputAmount
           createdTxHash
         }
       }`

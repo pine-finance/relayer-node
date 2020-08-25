@@ -23,9 +23,9 @@ export default class Book {
 
       if (exists) {
         // Check if from and to tokens are valid address
-        const isFromTokenContract = await this.provider.getCode(order.fromToken)
-        const isToTokenContract = await this.provider.getCode(order.toToken)
-        exists = (isFromTokenContract !== '0x' || order.fromToken.toLowerCase() === ethAddress) && (isToTokenContract !== '0x' || order.toToken.toLowerCase() === ethAddress)
+        const isInputTokenContract = await this.provider.getCode(order.inputToken)
+        const isOutputTokenContract = await this.provider.getCode(order.outputToken)
+        exists = (isInputTokenContract !== '0x' || order.inputToken.toLowerCase() === ethAddress) && (isOutputTokenContract !== '0x' || order.outputToken.toLowerCase() === ethAddress)
       }
 
       return exists
@@ -51,7 +51,7 @@ export default class Book {
   async add(order: Order) {
     try {
       logger.debug(
-        `Book: Add new order ${order.owner} ${order.fromToken} -> ${order.toToken}`
+        `Book: Add new order ${order.owner} ${order.inputToken} -> ${order.outputToken}`
       )
 
       this.orders.push(order)

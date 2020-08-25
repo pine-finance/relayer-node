@@ -26,8 +26,8 @@ export default class Monitor {
         setTimeout(loop, timeBetweenPendingChecks)
       } catch (e) {
         logger.info(e.message)
-        logger.info(`Retrying loop in ${timeBetweenPendingChecks * 10 / 1000 / 60} minutes....`)
-        setTimeout(loop, timeBetweenPendingChecks * 10)
+        logger.info(`Retrying loop in ${timeBetweenPendingChecks / 1000 / 60} minutes....`)
+        setTimeout(loop, timeBetweenPendingChecks)
       }
     }
     loop()

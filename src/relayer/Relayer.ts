@@ -13,7 +13,7 @@ import { UNISWAPEX_ADDRESSES, UNISWAP_V1_HANDLER_ADDRESSES, UNISWAP_V2_HANDLER_A
 
 import { logger, getGasPrice } from '../utils'
 
-const FEE = ethers.BigNumber.from(1000000000000000)
+const BASE_FEE = ethers.BigNumber.from(6000000000000000) // 0,006 eth
 
 
 export default class Relayer {
@@ -64,43 +64,9 @@ export default class Relayer {
     )
   }
 
-  async isReady(order: Order): Promise<boolean> {
-    let ready
-
-    try {
-      ready = await this.uniswapex.canExecuteOrder(
-        order.module,
-        order.fromToken,
-        order.owner,
-        order.witness,
-        this.abiCoder.encode(['address', 'uint256'], [order.toToken, order.minReturn.toString()]),
-        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE]),
-        { from: this.account.address }
-      )
-
-      if (!ready) {
-        await this.uniswapex.canExecuteOrder(
-          order.module,
-          order.fromToken,
-          order.owner,
-          order.witness,
-          this.abiCoder.encode(['address', 'uint256'], [order.toToken, order.minReturn.toString()]),
-          this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV1Handler.address, this.account.address, FEE]),
-          { from: this.account.address }
-        )
-      }
-
-    } catch (e) {
-      logger.debug(`Relayer: Failed at canExecuteOrder for ${order.createdTxHash}: ${e.message} ${e.stack}`)
-    }
-    logger.debug(`Relayer: Order ${order.createdTxHash} is${ready ? '' : ' not'} ready`)
-
-    return ready
-  }
-
-
-  async canExecute(order: Order): Promise<boolean> {
-    return ((await this.isReady(order)))
+  async getFinalFee(gas = ethers.BigNumber.from(200000)): Promise<ethers.BigNumber> { // 200,000 seems to be an avg of gas for execution
+    const gasPrice = await this.provider.getGasPrice()
+    return BASE_FEE.add(gas.mul(gasPrice))
   }
 
   async sign(address: string, priv: string): Promise<string> {
@@ -108,73 +74,151 @@ export default class Relayer {
 
     const wallet = new Wallet(priv)
 
-    // Unsafe as fuck, but not for this.
+    // Unsafe but not for this.
     return joinSignature(wallet._signingKey().signDigest(hash))
   }
 
-  async fillOrder(order: Order): Promise<string | undefined> {
-    let gasPrice = await getGasPrice()
+  // async fillOrder(order: Order): Promise<string | undefined> {
+  //   let gasPrice = await getGasPrice()
 
-    if (gasPrice.eq(0)) {
-      gasPrice = await this.provider.getGasPrice()
+  //   if (gasPrice.eq(0)) {
+  //     gasPrice = await this.provider.getGasPrice()
+  //   }
+
+  //   const fee = await this.getFinalFee()
+
+  //   logger.debug(`Relayer: Loaded gas price for ${order.createdTxHash} -> ${gasPrice}`)
+
+  //   const signature = await this.sign(this.account.address, order.secret)
+
+  //   logger.debug(`Relayer: signature for ${order.createdTxHash} -> ${signature}`)
+
+  //   let handler = this.uniswapexV2Handler.address
+  //   let uniswapV1Res
+  //   let uniswapV2Res
+  //   try {
+  //     uniswapV1Res = await this.uniswapexV1Handler.simulate(
+  //       order.inputToken,
+  //       order.outputToken,
+  //       order.inputAmount.toString(),
+  //       order.minReturn.toString(),
+  //       this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV1Handler.address, this.account.address, fee.toString()])
+  //     )
+  //   } catch (e) {
+  //     // Do nothing
+  //     logger.debug(`Relayer: failed to get best handler V1: ${e.message}`)
+  //   }
+
+  //   try {
+  //     uniswapV2Res = await this.uniswapexV2Handler.simulate(
+  //       order.inputToken,
+  //       order.outputToken,
+  //       order.inputAmount.toString(),
+  //       order.minReturn.toString(),
+  //       this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, fee.toString()])
+  //     )
+  //   } catch (e) {
+  //     // Do nothing
+  //     logger.debug(`Relayer: failed to get best handler V2: ${e.message}`)
+  //   }
+
+  //   let bought = ethers.BigNumber.from(0)
+  //   if (uniswapV1Res && uniswapV1Res[0]) {
+  //     logger.info(`Can be executed with uniswap v1`)
+  //     handler = this.uniswapexV1Handler.address
+  //     bought = uniswapV1Res[1]
+  //   }
+
+  //   if (uniswapV2Res && uniswapV2Res[0] && bought.lte(uniswapV2Res[1])) {
+  //     logger.info(`Can be executed with uniswap v2`)
+  //     handler = this.uniswapexV2Handler.address
+  //   }
+
+  //   let estimatedGas = ethers.BigNumber.from(0)
+
+  //   const { params, finalFee } = await this.getOrderExecutionParams(order, signature, handler, fee)
+
+  //   try {
+  //     estimatedGas = await this.uniswapex.estimateGas.executeOrder(
+  //       ...params
+  //     )
+  //   } catch (e) {
+  //     logger.info(`Could not estimate gas for order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
+  //     return undefined
+
+  //   }
+
+  //   logger.debug(
+  //     `Relayer: Estimated gas for ${order.createdTxHash} -> ${estimatedGas}`
+  //   )
+
+  //   if (gasPrice.mul(estimatedGas).gt(finalFee)) {
+  //     gasPrice = await this.provider.getGasPrice()
+  //     if (gasPrice.mul(estimatedGas).gt(finalFee)) {
+  //       // Fee is too low
+  //       logger.info(
+  //         `Relayer: Skip, fee is not enought ${order.createdTxHash} cost: ${gasPrice.mul(estimatedGas).toString()}`
+  //       )
+  //       return undefined
+  //     }
+  //   }
+
+  //   try {
+  //     const tx = await this.uniswapex.executeOrder(
+  //       ...params,
+  //       {
+  //         from: this.account.address,
+  //         gasLimit: estimatedGas,
+  //         gasPrice: gasPrice
+  //       })
+
+  //     logger.info(
+  //       `Relayer: Filled ${order.createdTxHash} order, executedTxHash: ${tx.hash}`
+  //     )
+  //     return tx.hash
+  //   } catch (e) {
+  //     logger.warn(`Relayer: Error filling order ${order.createdTxHash}: ${e.message}`)
+  //     return undefined
+  //   }
+  // }
+
+  async executeOrder(order: Order): Promise<string | undefined> {
+    // Get handler to use
+    const handler = await this.getHandler(order)
+    if (!handler) {
+      return
     }
 
-    logger.debug(`Relayer: Loaded gas price for ${order.createdTxHash} -> ${gasPrice}`)
+    // Sign message
+    const signature = await this.sign(this.account.address, order.secret)
 
-    const witnesses = await this.sign(this.account.address, order.secret)
+    let params = this.getOrderExecutionParams(order, signature, handler)
 
-    logger.debug(`Relayer: Witnesses for ${order.createdTxHash} -> ${witnesses}`)
-
-    let handler = this.uniswapexV2Handler.address
-    try {
-      const [uniswapV1Res, uniswapV2Res] = await Promise.all([
-        this.uniswapexV1Handler.simulate(order.fromToken, order.toToken, order.amount, order.minReturn, this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE])),
-        this.uniswapexV2Handler.simulate(order.fromToken, order.toToken, order.amount, order.minReturn, this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, FEE]))
-      ])
-      console.log(uniswapV1Res, uniswapV2Res)
-
-      let bought = ethers.BigNumber.from(0)
-      if (uniswapV1Res[0]) {
-        logger.info(`Can be executed with uniswap v1`)
-        handler = this.uniswapexV1Handler.address
-        bought = uniswapV1Res[1]
-      }
-
-      if (uniswapV2Res[0] && bought.lte(uniswapV2Res[2])) {
-        logger.info(`Can be executed with uniswap v2`)
-        handler = this.uniswapexV2Handler.address
-      }
-    } catch (e) {
-      logger.debug(`Relayer: failed to get best handler: ${e.message}`)
-    }
-
+    // Get real estimated gas
     let estimatedGas = ethers.BigNumber.from(0)
-
-    const params = [
-      order.module,
-      order.fromToken,
-      order.owner,
-      this.abiCoder.encode(['address', 'uint256'], [order.toToken, order.minReturn.toString()]),
-      witnesses,
-      this.abiCoder.encode(['address', 'address', 'uint256'], [handler, this.account.address, FEE])
-    ]
     try {
       estimatedGas = await this.uniswapex.estimateGas.executeOrder(
         ...params
       )
     } catch (e) {
-      logger.info(`Could not estimate gas for order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
+      logger.debug(`Could not estimate gas for order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
       return undefined
-
     }
 
     logger.debug(
       `Relayer: Estimated gas for ${order.createdTxHash} -> ${estimatedGas}`
     )
 
-    if (gasPrice.mul(estimatedGas).gt(FEE)) {
+    let gasPrice = await getGasPrice()
+    if (gasPrice.eq(0)) {
       gasPrice = await this.provider.getGasPrice()
-      if (gasPrice.mul(estimatedGas).gt(FEE)) {
+    }
+
+    const fee = await this.getFee(order, signature, handler, gasPrice.mul(estimatedGas)) // gasPrice.
+
+    if (gasPrice.mul(estimatedGas).gt(fee)) {
+      gasPrice = await this.provider.getGasPrice()
+      if (gasPrice.mul(estimatedGas).gt(fee)) {
         // Fee is too low
         logger.info(
           `Relayer: Skip, fee is not enought ${order.createdTxHash} cost: ${gasPrice.mul(estimatedGas).toString()}`
@@ -183,6 +227,8 @@ export default class Relayer {
       }
     }
 
+    // Build execution params with fee
+    params = this.getOrderExecutionParams(order, signature, handler, fee)
     try {
       const tx = await this.uniswapex.executeOrder(
         ...params,
@@ -199,6 +245,96 @@ export default class Relayer {
     } catch (e) {
       logger.warn(`Relayer: Error filling order ${order.createdTxHash}: ${e.message}`)
       return undefined
+    }
+
+  }
+
+  async getHandler(order: Order): Promise<ethers.Contract | undefined> {
+    const fee = await this.getFinalFee()
+
+    let handler: ethers.Contract | undefined
+    let uniswapV1Res
+    let uniswapV2Res
+    try {
+      uniswapV1Res = await this.uniswapexV1Handler.simulate(
+        order.inputToken,
+        order.outputToken,
+        order.inputAmount.toString(),
+        order.minReturn.toString(),
+        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV1Handler.address, this.account.address, fee.toString()])
+      )
+    } catch (e) {
+      // Do nothing
+      logger.debug(`Relayer: failed to get best handler V1: ${e.message}`)
+    }
+
+    try {
+      uniswapV2Res = await this.uniswapexV2Handler.simulate(
+        order.inputToken,
+        order.outputToken,
+        order.inputAmount.toString(),
+        order.minReturn.toString(),
+        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapexV2Handler.address, this.account.address, fee.toString()])
+      )
+    } catch (e) {
+      // Do nothing
+      logger.debug(`Relayer: failed to get best handler V2: ${e.message}`)
+    }
+
+    let bought = ethers.BigNumber.from(0)
+    if (uniswapV1Res && uniswapV1Res[0]) {
+      logger.info(`Can be executed with uniswap v1`)
+      handler = this.uniswapexV1Handler
+      bought = uniswapV1Res[1]
+    }
+
+    if (uniswapV2Res && uniswapV2Res[0] && bought.lte(uniswapV2Res[1])) {
+      logger.info(`Can be executed with uniswap v2`)
+      handler = this.uniswapexV2Handler
+    }
+
+    return handler
+  }
+
+  getOrderExecutionParams(order: Order, signature: string, handler: ethers.Contract, fee = ethers.BigNumber.from(0)): any {
+    return [
+      order.module,
+      order.inputToken,
+      order.owner,
+      this.abiCoder.encode(['address', 'uint256'], [order.outputToken, order.minReturn.toString()]),
+      signature,
+      this.abiCoder.encode(['address', 'address', 'uint256'], [handler.address, this.account.address, fee.toString()])
+    ]
+  }
+
+  async getFee(order: Order, signature: string, handler: ethers.Contract, baseETH: ethers.BigNumber) {
+    // If find best is not set, just return with base expected fee
+    const fee = baseETH.add(BASE_FEE)
+    if (!process.env.FIND_BEST) {
+      return fee
+    }
+
+    return this.findBestFee(order, signature, handler, fee)
+  }
+
+  async findBestFee(
+    order: Order,
+    signature: string,
+    handler: ethers.Contract,
+    fee: ethers.BigNumber,
+  ): Promise<ethers.BigNumber> {
+    const newFee = fee.mul(ethers.BigNumber.from(1000)).div(ethers.BigNumber.from(980))
+
+    try {
+      const params = this.getOrderExecutionParams(order, signature, handler, newFee)
+      await this.uniswapex.callStatic.executeOrder(
+        ...params
+      )
+      console.log(newFee.toString())
+      return this.findBestFee(order, signature, handler, newFee)
+    } catch (e) {
+      logger.info(`Could not increase fees anymore order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
+      return fee
     }
   }
 }

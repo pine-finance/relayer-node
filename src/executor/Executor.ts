@@ -23,16 +23,13 @@ export default class Executor {
         logger.debug(`Executor: Loaded order ${order.createdTxHash}`)
 
         if (exists) {
-          // Check if order is ready to be filled and it's still pending
-          if (await this.relayer.canExecute(order)) {
-            logger.info(`Executor: Filling order ${order.createdTxHash}`)
-            // Fill order, retry only 4 times
-            const result = await this.relayer.fillOrder(order)
+          logger.info(`Executor: Trying to execute order ${order.createdTxHash}`)
+          // Fill order, retry only 4 times
+          const result = await this.relayer.executeOrder(order)
 
-            if (result != undefined) {
-              // this.book.setFilled(order, result)
-              await db.saveOrder({ ...order, executedTxHash: result })
-            }
+          if (result != undefined) {
+            // this.book.setFilled(order, result)
+            await db.saveOrder({ ...order, executedTxHash: result })
           } else {
             logger.info(`Executor: Order not ready to be filled ${order.createdTxHash}`)
           }
