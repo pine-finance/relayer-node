@@ -1,4 +1,4 @@
-# UniswapEx (Node) Relayer
+# Pine Finance (Node) Relayer
 
 ## Setup
 
@@ -14,10 +14,10 @@ npm install
 
 ### DB
 
-Create a database (default name `uniswapex`)
+Create a database (default name `pine`)
 
 ```sql
-CREATE DATABASE uniswapex
+CREATE DATABASE pine
 ```
 
 You can use postgress directly or pgadmin.
@@ -32,7 +32,7 @@ You can use postgress directly or pgadmin.
 
 - `npm run indexer:most-used` Index most used token's orders
 
-Tokens can be changed [here](https://github.com/UniswapEx/relayer-node/blob/master/src/utils/tokens.ts).
+Tokens can be changed [here](https://github.com/pine-finance/relayer-node/blob/master/src/utils/tokens.ts).
 
 ### Execute indexed orders
 

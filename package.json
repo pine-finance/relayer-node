@@ -1,8 +1,8 @@
 {
   "name": "node-relayer",
   "version": "1.0.0",
-  "description": "Index and execute uniswapex orders",
-  "author": "UniswapEx team <developers@decentraland.org>",
+  "description": "Index and execute pine orders",
+  "author": "Pine Finance team",
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --project tsconfig.json",

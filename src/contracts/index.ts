@@ -1,4 +1,4 @@
-export const UNISWAPEX_ADDRESSES = {
+export const PINE_CORE_ADDRESSES = {
   1: '0xb6548416b3db631e5351fa8ab227f85608050fdb',
   4: '0xb6548416b3db631e5351fa8ab227f85608050fdb'
 }
