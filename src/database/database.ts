@@ -3,7 +3,7 @@ import { createConnection, Repository, Connection } from 'typeorm'
 import { join } from 'path'
 import { BN } from 'ethereumjs-util'
 
-import { IndexerTypes } from '../utils'
+import { IndexerTypes, getNetworkName } from '../utils'
 import { Orders as OrderDB } from './entities/Order'
 import { Indexer as IndexerDB } from './entities/Indexer'
 import { Order } from '../book/types'
@@ -16,16 +16,19 @@ let indexer: Repository<IndexerDB>
 
 export async function connectDB() {
   try {
+    const network = getNetworkName()
     connection = await createConnection({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT) || 5432,
-      database: process.env.DB_DATABASE || 'pine',
+      database: (process.env.DB_DATABASE || 'pine') + `_` + network,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       entities: [`${parentDir}/database/entities/*.ts`],
       synchronize: true
     })
+    console.log(`Using  DB: ${(process.env.DB_DATABASE || 'pine') + `_` + network}`)
+
     orders = await connection.getRepository(OrderDB)
     indexer = await connection.getRepository(IndexerDB)
   } catch (e) {

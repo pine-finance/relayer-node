@@ -6,11 +6,13 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "indexer": "LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
-    "indexer:most-used": "MOST_USED=true LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
+    "indexer:mainnet": "CHAIN_ID=1 LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
+    "indexer:rinkeby": "CHAIN_ID=4 LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
     "indexer:watch": "LOGGER_FILE=indexOrders nodemon --exec ts-node ./src/indexOrders.ts",
-    "executor": "LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
-    "executor:find-best": "FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:mainnet": "CHAIN_ID=1 LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:mainnet:find-best": "CHAIN_ID=1 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:rinkeby": "CHAIN_ID=4  LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:rinkeby:find-best": "CHAIN_ID=4 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:watch": "LOGGER_FILE=executeOrders nodemon --exec ts-node ./src/executeOrders.ts"
   },
   "dependencies": {
@@ -22,6 +24,7 @@
     "@types/bn.js": "^4.11.5",
     "@types/dotenv": "^6.1.1",
     "@types/isomorphic-fetch": "0.0.35",
+    "@types/node": "^14.6.1",
     "@types/pg": "^7.4.14",
     "@types/progress": "^2.0.3",
     "async-retry": "^1.2.3",
@@ -35,7 +38,7 @@
     "reflect-metadata": "^0.1.13",
     "ts-node": "^8.1.0",
     "typeorm": "^0.2.19",
-    "typescript": "^3.4.5",
+    "typescript": "^3.9.7",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.2.1"
   },
