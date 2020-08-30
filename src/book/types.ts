@@ -1,14 +1,15 @@
-import { BN } from 'ethereumjs-util'
+import { BigNumber } from 'ethers'
 
 export type Order = {
   id: string
-  fromToken: string
-  toToken: string
-  minReturn: BN
-  fee: BN
+  module: string
+  inputToken: string
+  outputToken: string
+  minReturn: BigNumber
+  inputAmount: BigNumber
   owner: string
   secret: string
   witness: string
-  txHash: string
-  executedTx?: string | null
+  createdTxHash: string
+  executedTxHash?: string | null
 }

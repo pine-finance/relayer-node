@@ -14,10 +14,10 @@ var transport = new (DailyRotateFile)({
   zippedArchive: false,
   maxSize: '100m',
   maxFiles: '14d'
-});
+})
 
 export const logger: Logger = createLogger({
-  level: process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'info',
+  level: process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'debug',
   defaultMeta: { service: 'user-service' },
   format: combine(timestamp(), myFormat),
   transports: [

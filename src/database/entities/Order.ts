@@ -6,17 +6,23 @@ export class Orders {
   id: string = ''
 
   @Column()
-  @Index()
-  fromToken: string = ''
+  module: string = ''
 
   @Column()
   @Index()
-  toToken: string = ''
+  inputToken: string = ''
+
+  @Column()
+  @Index()
+  outputToken: string = ''
 
   @Column()
   minReturn: string = ''
 
   @Column()
+  inputAmount: string = ''
+
+  @Column({ type: String, nullable: true })
   @Index()
   fee: string = ''
 
@@ -32,9 +38,9 @@ export class Orders {
 
   @Column()
   @Index()
-  txHash: string = ''
+  createdTxHash: string = ''
 
   @Column({ type: String, nullable: true })
   @Index()
-  executedTx?: string | null = ''
+  executedTxHash?: string | null = ''
 }

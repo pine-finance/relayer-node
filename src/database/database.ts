@@ -3,7 +3,7 @@ import { createConnection, Repository, Connection } from 'typeorm'
 import { join } from 'path'
 import { BN } from 'ethereumjs-util'
 
-import { IndexerTypes } from '../utils'
+import { IndexerTypes, getNetworkName } from '../utils'
 import { Orders as OrderDB } from './entities/Order'
 import { Indexer as IndexerDB } from './entities/Indexer'
 import { Order } from '../book/types'
@@ -16,16 +16,19 @@ let indexer: Repository<IndexerDB>
 
 export async function connectDB() {
   try {
+    const network = getNetworkName()
     connection = await createConnection({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT) || 5432,
-      database: process.env.DB_DATABASE || 'uniswapex',
+      database: (process.env.DB_DATABASE || 'pine') + `_` + network,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       entities: [`${parentDir}/database/entities/*.ts`],
       synchronize: true
     })
+    console.log(`Using  DB: ${(process.env.DB_DATABASE || 'pine') + `_` + network}`)
+
     orders = await connection.getRepository(OrderDB)
     indexer = await connection.getRepository(IndexerDB)
   } catch (e) {
@@ -38,7 +41,7 @@ function normalizeOrder(order: Order) {
   return {
     ...order,
     minReturn: order.minReturn.toString(),
-    fee: order.fee.toString()
+    inputAmount: order.inputAmount.toString()
   }
 }
 
@@ -46,7 +49,7 @@ function denormalizeOrder(order: any): Order {
   return {
     ...order,
     minReturn: new BN(order.minReturn),
-    fee: new BN(order.fee)
+    inputAmount: new BN(order.inputAmount),
   }
 }
 
@@ -54,12 +57,12 @@ async function getOpenOrders() {
   return (await connection
     .createQueryBuilder(OrderDB, 'order')
     .select('*')
-    .where('order.executedTx is NULL')
+    .where('order.executedTxHash is NULL')
     .getRawMany()).map(denormalizeOrder)
 }
 
-async function getOrdersByTxHash(txHash: string) {
-  const foundOrders = await orders.find({ txHash })
+async function getOrdersByTxHash(createdTxHash: string) {
+  const foundOrders = await orders.find({ createdTxHash })
   return foundOrders.map(denormalizeOrder)
 }
 
