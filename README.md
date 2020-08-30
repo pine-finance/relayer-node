@@ -14,26 +14,20 @@ npm install
 
 ### DB
 
-Create a database (default name `pine`)
+Create a database. Network will be added at the end. E.g: `pine_mainnet`; `pine_rinkeby`; etc.
 
 ```sql
-CREATE DATABASE pine
+CREATE DATABASE pine_mainnet
 ```
 
 You can use postgress directly or pgadmin.
 
 ## Run
 
-### Index Uniswap's tokens
+### Index Orders
 
-- `npm run indexer` Index uniswap token's orders
-
-### Index Most used tokens
-
-- `npm run indexer:most-used` Index most used token's orders
-
-Tokens can be changed [here](https://github.com/pine-finance/relayer-node/blob/master/src/utils/tokens.ts).
+- `npm run indexer:mainnet` Index uniswap token's orders
 
 ### Execute indexed orders
 
-- `npm run executor` Execute orders when can be filled
+- `npm run executor:mainnet` Execute orders when can be filled
