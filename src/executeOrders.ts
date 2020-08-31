@@ -7,12 +7,12 @@ import { connectDB } from './database'
 import Book from './book'
 import Relayer from './relayer'
 import Executor from './executor'
-
+import { getInfuraURL, getNetworkName } from './utils'
 
 async function setupExecutor() {
   await connectDB()
 
-  const provider = new JsonRpcProvider(process.env.HTTP_RPC_URL, process.env.NETWORK)
+  const provider = new JsonRpcProvider(getInfuraURL(), getNetworkName())
   const book = new Book(provider)
   const relayer = new Relayer(provider)
   const executor = new Executor(book, relayer)

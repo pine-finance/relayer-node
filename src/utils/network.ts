@@ -15,6 +15,7 @@ export function getInfuraURL(): string {
     throw new Error('INVALID NETWORK')
   }
 
+  console.log(`https://${network}.infura.io/v3/${process.env.INFURA_ID}`)
   return `https://${network}.infura.io/v3/${process.env.INFURA_ID}`
 }
 
