@@ -33,7 +33,7 @@ async function setupIndexer() {
 
       // Stop the loop if last block is achieved
       if (fromBlock >= newBlock) {
-        steps = 10 // Go each 20 blocks then
+        steps = 20 // Go each 20 blocks then
         continue
       }
 

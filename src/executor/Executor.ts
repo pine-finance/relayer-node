@@ -16,10 +16,12 @@ export default class Executor {
     const openOrders = await db.getOpenOrders()
 
     try {
+      console.log('')
+      console.log('')
       logger.info(`Executor: watch round ${openOrders.length} open orders`)
       for (const order of openOrders) {
         const exists = await this.book.exists(order)
-
+        console.log('')
         logger.debug(`Executor: Loaded order ${order.createdTxHash}`)
 
         if (exists) {

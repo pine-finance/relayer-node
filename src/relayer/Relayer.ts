@@ -13,7 +13,7 @@ import { PINE_CORE_ADDRESSES, UNISWAP_V1_HANDLER_ADDRESSES, UNISWAP_V2_HANDLER_A
 
 import { logger, getGasPrice } from '../utils'
 
-const BASE_FEE = ethers.BigNumber.from(6000000000000000) // 0,006 eth
+const BASE_FEE = ethers.BigNumber.from('10000000000000000') // 0,01 eth
 
 
 export default class Relayer {
@@ -91,14 +91,9 @@ export default class Relayer {
     let params = this.getOrderExecutionParams(order, signature, handler)
 
     // Get real estimated gas
-    let estimatedGas = ethers.BigNumber.from(0)
-    try {
-      estimatedGas = await this.pineCore.estimateGas.executeOrder(
-        ...params
-      )
-    } catch (e) {
-      logger.debug(`Could not estimate gas for order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
-      return undefined
+    let estimatedGas = await this.estimateGasExecution(params)
+    if (!estimatedGas) {
+      return
     }
 
     logger.debug(
@@ -110,27 +105,55 @@ export default class Relayer {
       gasPrice = await this.provider.getGasPrice()
     }
 
-    const fee = await this.getFee(order, signature, handler, gasPrice.mul(estimatedGas)) // gasPrice.
-
-    if (gasPrice.mul(estimatedGas).gt(fee)) {
-      gasPrice = await this.provider.getGasPrice()
-      if (gasPrice.mul(estimatedGas).gt(fee)) {
-        // Fee is too low
-        logger.info(
-          `Relayer: Skip, fee is not enought ${order.createdTxHash} cost: ${gasPrice.mul(estimatedGas).toString()}`
-        )
-        return undefined
-      }
-    }
+    let fee = await this.getFee(order, signature, handler, gasPrice.mul(estimatedGas)) // gasPrice
 
     // Build execution params with fee
     params = this.getOrderExecutionParams(order, signature, handler, fee)
     try {
-      const tx = await this.pineCore.executeOrder(
+      estimatedGas = await this.estimateGasExecution(params, gasPrice)
+      if (!estimatedGas) {
+        return
+      }
+
+      fee = await this.getFee(order, signature, handler, gasPrice.mul(estimatedGas)) // gasPrice
+      if (gasPrice.mul(estimatedGas).gt(fee)) {
+        gasPrice = await this.provider.getGasPrice()
+        if (gasPrice.mul(estimatedGas).gt(fee)) {
+          // Fee is too low
+          logger.info(
+            `Relayer: Skip, fee is not enought ${order.createdTxHash} cost: ${gasPrice.mul(estimatedGas).toString()}`
+          )
+          return undefined
+        }
+      }
+
+      fee = await this.getFee(order, signature, handler, gasPrice.add(ethers.BigNumber.from(1)).mul(estimatedGas)) // gasPrice
+      params = this.getOrderExecutionParams(order, signature, handler, fee)
+      // simulate
+      await this.pineCore.callStatic.executeOrder(
         ...params,
         {
           from: this.account.address,
           gasLimit: estimatedGas,
+          gasPrice: gasPrice
+        }
+      )
+
+      const gasito = await this.pineCore.estimateGas.executeOrder(
+        ...params,
+        {
+          from: this.account.address,
+          gasPrice: gasPrice
+        }
+      )
+
+      logger.info(` gasito: ${gasito.toString()} and gas: ${estimatedGas.toString()}`)
+      //  execute
+      const tx = await this.pineCore.executeOrder(
+        ...params,
+        {
+          from: this.account.address,
+          gasLimit: gasito,
           gasPrice: gasPrice
         })
 
@@ -143,6 +166,18 @@ export default class Relayer {
       return undefined
     }
 
+  }
+
+  async estimateGasExecution(params: any, gasPrice = ethers.BigNumber.from(1)) {
+    try {
+      return await this.pineCore.estimateGas.executeOrder(
+        ...params,
+        { gasPrice }
+      )
+    } catch (e) {
+      logger.debug(`Could not estimate gas. Error: ${e.message}`)
+      return undefined
+    }
   }
 
   async getHandler(order: Order): Promise<ethers.Contract | undefined> {
@@ -192,7 +227,7 @@ export default class Relayer {
     return handler
   }
 
-  getOrderExecutionParams(order: Order, signature: string, handler: ethers.Contract, fee = ethers.BigNumber.from(0)): any {
+  getOrderExecutionParams(order: Order, signature: string, handler: ethers.Contract, fee = ethers.BigNumber.from(1)): any {
     return [
       order.module,
       order.inputToken,
@@ -226,7 +261,7 @@ export default class Relayer {
       await this.pineCore.callStatic.executeOrder(
         ...params
       )
-      console.log(newFee.toString())
+      console.log(`Using a new fee: ${newFee.toString()}`)
       return this.findBestFee(order, signature, handler, newFee)
     } catch (e) {
       logger.info(`Could not increase fees anymore order with createdTxHash ${order.createdTxHash}. Error: ${e.message}`)
