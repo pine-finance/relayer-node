@@ -110,32 +110,13 @@ export default class Relayer {
     // Build execution params with fee
     params = this.getOrderExecutionParams(order, signature, handler, fee)
     try {
-      estimatedGas = await this.estimateGasExecution(params, gasPrice)
-      if (!estimatedGas) {
-        return
-      }
-
-      fee = await this.getFee(order, signature, handler, gasPrice.mul(estimatedGas)) // gasPrice
-      if (gasPrice.mul(estimatedGas).gt(fee)) {
-        gasPrice = await this.provider.getGasPrice()
-        if (gasPrice.mul(estimatedGas).gt(fee)) {
-          // Fee is too low
-          logger.info(
-            `Relayer: Skip, fee is not enought ${order.createdTxHash} cost: ${gasPrice.mul(estimatedGas).toString()}`
-          )
-          return undefined
-        }
-      }
-
-      fee = await this.getFee(order, signature, handler, gasPrice.add(ethers.BigNumber.from(1)).mul(estimatedGas)) // gasPrice
-      params = this.getOrderExecutionParams(order, signature, handler, fee)
       // simulate
       await this.pineCore.callStatic.executeOrder(
         ...params,
         {
           from: this.account.address,
           gasLimit: estimatedGas,
-          gasPrice: gasPrice
+          gasPrice
         }
       )
 
@@ -143,11 +124,17 @@ export default class Relayer {
         ...params,
         {
           from: this.account.address,
-          gasPrice: gasPrice
+          gasPrice
         }
       )
 
       logger.info(` gasito: ${gasito.toString()} and gas: ${estimatedGas.toString()}`)
+
+      const checkedHandler = await this.getHandler(order, fee)
+
+      if (!checkedHandler) {
+        throw new Error('No handler')
+      }
       //  execute
       const tx = await this.pineCore.executeOrder(
         ...params,
@@ -175,13 +162,18 @@ export default class Relayer {
         { gasPrice }
       )
     } catch (e) {
-      logger.debug(`Could not estimate gas. Error: ${e.message}`)
+      logger.debug(`Could not estimate gas. Error: ${e.error}`)
       return undefined
     }
   }
 
-  async getHandler(order: Order): Promise<ethers.Contract | undefined> {
-    const fee = await this.getFinalFee()
+  async getHandler(order: Order, fee?: ethers.BigNumber): Promise<ethers.Contract | undefined> {
+    let usedFee
+    if (fee) {
+      usedFee = fee
+    } else {
+      usedFee = await this.getFinalFee()
+    }
 
     let handler: ethers.Contract | undefined
     let uniswapV1Res
@@ -192,7 +184,7 @@ export default class Relayer {
         order.outputToken,
         order.inputAmount.toString(),
         order.minReturn.toString(),
-        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapV1Handler.address, this.account.address, fee.toString()])
+        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapV1Handler.address, this.account.address, usedFee.toString()])
       )
     } catch (e) {
       // Do nothing
@@ -205,7 +197,7 @@ export default class Relayer {
         order.outputToken,
         order.inputAmount.toString(),
         order.minReturn.toString(),
-        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapV2Handler.address, this.account.address, fee.toString()])
+        this.abiCoder.encode(['address', 'address', 'uint256'], [this.uniswapV2Handler.address, this.account.address, usedFee.toString()])
       )
     } catch (e) {
       // Do nothing
@@ -220,7 +212,7 @@ export default class Relayer {
     }
 
     if (uniswapV2Res && uniswapV2Res[0] && bought.lte(uniswapV2Res[1])) {
-      logger.info(`Can be executed with uniswap v2`)
+      logger.info(`Can be executed with uniswap v2: ${uniswapV2Res[1].toString()}`)
       handler = this.uniswapV2Handler
     }
 
