@@ -48,11 +48,11 @@ class API {
     }
   }
 
-  async isOrderStillOpen(id: string): Promise<boolean> {
+  async getCancelledOrders(ids: string[]): Promise<string[]> {
     const query = `
-      query getOrdersStatus($id: String) {
-        orders(where:{id:$id}) {
-          status
+      query getOrdersCancelled($ids: [String]) {
+        orders(where:{id_in:$ids, status_not: open}) {
+          id
         }
       }`
 
@@ -60,12 +60,14 @@ class API {
       const res = await fetch(this.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { id } })
+        body: JSON.stringify({ query, variables: { ids } })
       })
 
       const { data } = await res.json()
 
-      return data.orders && data.orders.length === 1 && data.orders[0].status === 'open'
+      console.log(data)
+
+      return data.orders.map((o: any) => o.id)
     } catch (e) {
       console.log(e.message)
       throw new Error(`API: Error getting order at isOrderStillOpen: ${e.message}`)

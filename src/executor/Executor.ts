@@ -19,28 +19,26 @@ export default class Executor {
       console.log('')
       console.log('')
       logger.info(`Executor: watch round ${openOrders.length} open orders`)
+      const cancelledOrders = await this.book.exists(openOrders)
+
+      for (const order of cancelledOrders) {
+        logger.info(
+          `Executor: Order ${order.createdTxHash} no longer exists, removing it from pool`
+        )
+        // Set order as filled
+        await db.saveOrder({ ...order, executedTxHash: '0x' })
+      }
+
       for (const order of openOrders) {
-        const exists = await this.book.exists(order)
         console.log('')
-        logger.debug(`Executor: Loaded order ${order.createdTxHash}`)
+        logger.debug(`Executor: Trying to execute order ${order.createdTxHash}`)
+        // Fill order, retry only 4 times
+        const result = await this.relayer.executeOrder(order)
 
-        if (exists) {
-          logger.info(`Executor: Trying to execute order ${order.createdTxHash}`)
-          // Fill order, retry only 4 times
-          const result = await this.relayer.executeOrder(order)
-
-          if (result != undefined) {
-            // this.book.setFilled(order, result)
-            await db.saveOrder({ ...order, executedTxHash: result })
-          } else {
-            logger.info(`Executor: Order not ready to be filled ${order.createdTxHash}`)
-          }
+        if (result != undefined) {
+          await db.saveOrder({ ...order, executedTxHash: result })
         } else {
-          logger.info(
-            `Executor: Order ${order.createdTxHash} no longer exists, removing it from pool`
-          )
-          // Set order as filled
-          await db.saveOrder({ ...order, executedTxHash: '0x' })
+          logger.info(`Executor: Order not ready to be filled ${order.createdTxHash}`)
         }
       }
     } catch (e) {

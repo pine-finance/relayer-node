@@ -11,11 +11,15 @@
     "indexer:watch": "LOGGER_FILE=indexOrders nodemon --exec ts-node ./src/indexOrders.ts",
     "executor:mainnet": "CHAIN_ID=1 LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:mainnet:find-best": "CHAIN_ID=1 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:mainnet:balancer": "CHAIN_ID=1 HANDLER=balancer LOGGER_FILE=executeOrders_balancer ts-node --type-check ./src/executeOrders.ts",
+    "executor:mainnet:1Inch": "CHAIN_ID=1 HANDLER=1Inch LOGGER_FILE=executeOrders_1Inch ts-node --type-check ./src/executeOrders.ts",
     "executor:rinkeby": "CHAIN_ID=4  LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:rinkeby:find-best": "CHAIN_ID=4 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
+    "executor:rinkeby:balancer": "CHAIN_ID=4 HANDLER=balancer ts-node --type-check ./src/executeOrders.ts",
     "executor:watch": "LOGGER_FILE=executeOrders nodemon --exec ts-node ./src/executeOrders.ts"
   },
   "dependencies": {
+    "@balancer-labs/sor": "^0.3.3",
     "@ethersproject/bytes": "^5.0.3",
     "@ethersproject/contracts": "^5.0.2",
     "@ethersproject/providers": "^5.0.5",

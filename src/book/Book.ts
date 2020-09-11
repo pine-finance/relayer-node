@@ -15,20 +15,10 @@ export default class Book {
     this.filledOrders = {}
   }
 
-  async exists(order: Order): Promise<boolean> {
-    const ethAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase()
-
+  async exists(orders: Order[]): Promise<Order[]> {
     try {
-      let exists = await api.isOrderStillOpen(order.id)
-
-      if (exists) {
-        // Check if from and to tokens are valid address
-        const isInputTokenContract = await this.provider.getCode(order.inputToken)
-        const isOutputTokenContract = await this.provider.getCode(order.outputToken)
-        exists = (isInputTokenContract !== '0x' || order.inputToken.toLowerCase() === ethAddress) && (isOutputTokenContract !== '0x' || order.outputToken.toLowerCase() === ethAddress)
-      }
-
-      return exists
+      let ids = await api.getCancelledOrders(orders.map(o => o.id))
+      return orders.filter(order => ids.some(id => id === order.id))
     } catch (e) {
       if (e.message.indexOf('Invalid JSON RPC response') !== -1) {
         throw new Error('invalid RPC call')
@@ -38,7 +28,7 @@ export default class Book {
         throw new Error(e.message)
       }
 
-      return true
+      return []
     }
   }
 
