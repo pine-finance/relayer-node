@@ -10,6 +10,7 @@ export type Order = {
   owner: string
   secret: string
   witness: string
+  signature: string
   createdTxHash: string
   executedTxHash?: string | null
 }

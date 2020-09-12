@@ -43,4 +43,7 @@ export class Orders {
   @Column({ type: String, nullable: true })
   @Index()
   executedTxHash?: string | null = ''
+
+  @Column({ type: String, nullable: true })
+  signature?: string | null = ''
 }
