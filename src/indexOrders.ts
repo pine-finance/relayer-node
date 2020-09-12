@@ -9,7 +9,6 @@ import Book from './book'
 import { Order } from './book/types'
 import { logger, getIndexerId, getInfuraURL, getNetworkName } from './utils'
 
-
 async function setupIndexer() {
   await connectDB()
 
@@ -43,13 +42,9 @@ async function setupIndexer() {
         toBlock = newBlock
       }
 
-      await indexer.getOrders(
-        fromBlock,
-        toBlock,
-        async (rawOrder: Order) => {
-          await book.add(rawOrder)
-        }
-      )
+      await indexer.getOrders(fromBlock, toBlock, async (rawOrder: Order) => {
+        await book.add(rawOrder)
+      })
       await db.saveBlock(indexerId, toBlock)
     }
     block = newBlock

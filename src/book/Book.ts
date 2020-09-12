@@ -24,7 +24,11 @@ export default class Book {
         throw new Error('invalid RPC call')
       }
 
-      if (e.message.indexOf('provider or signer is needed to resolve ENS names') !== -1) {
+      if (
+        e.message.indexOf(
+          'provider or signer is needed to resolve ENS names'
+        ) !== -1
+      ) {
         throw new Error(e.message)
       }
 
@@ -33,7 +37,9 @@ export default class Book {
   }
 
   setFilled(order: Order, executedTxHashHash: string): void {
-    logger.debug(`Book: Order ${order.createdTxHash} was filled by ${executedTxHashHash}`)
+    logger.debug(
+      `Book: Order ${order.createdTxHash} was filled by ${executedTxHashHash}`
+    )
 
     this.filledOrders[order.createdTxHash] = executedTxHashHash
   }
@@ -48,7 +54,9 @@ export default class Book {
 
       await db.saveOrder(order)
     } catch (e) {
-      logger.info(`Book: Invalid order from createdTxHash: ${order.createdTxHash}. Error ${e.message}`)
+      logger.info(
+        `Book: Invalid order from createdTxHash: ${order.createdTxHash}. Error ${e.message}`
+      )
     }
   }
 }

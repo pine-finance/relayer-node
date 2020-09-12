@@ -38,11 +38,15 @@ export default class Executor {
         if (result != undefined) {
           await db.saveOrder({ ...order, executedTxHash: result })
         } else {
-          logger.info(`Executor: Order not ready to be filled ${order.createdTxHash}`)
+          logger.info(
+            `Executor: Order not ready to be filled ${order.createdTxHash}`
+          )
         }
       }
     } catch (e) {
-      logger.info(`Executor: failed to watch round ${openOrders.length} open orders: ${e.message}`)
+      logger.info(
+        `Executor: failed to watch round ${openOrders.length} open orders: ${e.message}`
+      )
       await new Promise(resolve => setTimeout(resolve, 30000)) // sleep 30 seconds
     }
   }

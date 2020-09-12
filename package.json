@@ -5,6 +5,8 @@
   "author": "Pine Finance team",
   "license": "Apache-2.0",
   "scripts": {
+    "lint": "tslint -p tsconfig.json",
+    "lint:fix": "tslint -p tsconfig.json --fix",
     "build": "tsc --project tsconfig.json",
     "indexer:mainnet": "CHAIN_ID=1 LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
     "indexer:rinkeby": "CHAIN_ID=4 LOGGER_FILE=indexOrders ts-node ./src/indexOrders.ts",
@@ -48,12 +50,11 @@
   },
   "devDependencies": {
     "eslint": "^6.4.0",
-    "eslint-config-prettier": "^2.6.0",
-    "eslint-plugin-prettier": "^2.3.1",
     "nodemon": "^1.19.0",
     "prettier": "^1.17.1",
     "source-map-support": "^0.5.12",
-    "tslint": "^6.1.3"
+    "tslint": "^6.1.3",
+    "tslint-plugin-prettier": "^2.3.0"
   },
   "prettier": {
     "printWidth": 80,

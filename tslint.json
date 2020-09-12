@@ -1,21 +1,13 @@
 {
   "extends": [
-    "tslint-react",
-    "dcl-tslint-config-standard",
     "tslint-plugin-prettier"
   ],
   "rules": {
-    "ter-indent": false,
     "no-commented-out-code": false,
-    "jsx-no-multiline-js": false,
-    "jsx-wrap-multiline": false,
-    "jsx-no-lambda": false,
-    "ban-types": [
+    "variable-name": [
       true,
-      "Number",
-      "Boolean",
-      "String",
-      "Object"
+      "ban-keywords",
+      "allow-leading-underscore"
     ],
     "prettier": [
       true,
@@ -24,11 +16,6 @@
         "singleQuote": true,
         "semi": false
       }
-    ],
-    "quotemark": [
-      true,
-      "single",
-      "jsx-double"
     ]
   },
   "linterOptions": {

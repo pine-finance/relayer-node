@@ -17,7 +17,10 @@ class API {
     this.url = url
   }
 
-  async getOpenOrdersBetweenBlock(fromBlock: number, toBlock: number): Promise<Order[]> {
+  async getOpenOrdersBetweenBlock(
+    fromBlock: number,
+    toBlock: number
+  ): Promise<Order[]> {
     const query = `
       query getOrdersFromBlock($fromBlock: BigInt, $toBlock: BigInt) {
         orders(where:{blockNumber_gte:$fromBlock,blockNumber_lte:$toBlock,status:open}) {
@@ -38,13 +41,18 @@ class API {
       const res = await fetch(this.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { fromBlock: fromBlock - 40, toBlock } }) // Get some from re-orgs
+        body: JSON.stringify({
+          query,
+          variables: { fromBlock: fromBlock - 40, toBlock }
+        }) // Get some from re-orgs
       })
 
       const { data } = await res.json()
       return data.orders
     } catch (e) {
-      throw new Error(`API: Error getting orders at getOpenOrdersFromBlock: ${e.message}`)
+      throw new Error(
+        `API: Error getting orders at getOpenOrdersFromBlock: ${e.message}`
+      )
     }
   }
 
@@ -70,13 +78,11 @@ class API {
       return data.orders.map((o: any) => o.id)
     } catch (e) {
       console.log(e.message)
-      throw new Error(`API: Error getting order at isOrderStillOpen: ${e.message}`)
+      throw new Error(
+        `API: Error getting order at isOrderStillOpen: ${e.message}`
+      )
     }
   }
-
-
-
-
 }
 
 export const api = new API()

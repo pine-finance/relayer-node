@@ -27,7 +27,9 @@ export async function connectDB() {
       entities: [`${parentDir}/database/entities/*.ts`],
       synchronize: true
     })
-    console.log(`Using  DB: ${(process.env.DB_DATABASE || 'pine') + `_` + network}`)
+    console.log(
+      `Using  DB: ${(process.env.DB_DATABASE || 'pine') + `_` + network}`
+    )
 
     orders = await connection.getRepository(OrderDB)
     indexer = await connection.getRepository(IndexerDB)
@@ -49,7 +51,7 @@ function denormalizeOrder(order: any): Order {
   return {
     ...order,
     minReturn: new BN(order.minReturn),
-    inputAmount: new BN(order.inputAmount),
+    inputAmount: new BN(order.inputAmount)
   }
 }
 

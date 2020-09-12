@@ -11,7 +11,7 @@ import { db } from '../database'
 import { logger } from '../utils'
 import { Order } from '../book/types'
 import pineCoreBI from '../contracts/abis/PineCore.json'
-import { PINE_CORE_ADDRESSES, } from '../contracts'
+import { PINE_CORE_ADDRESSES } from '../contracts'
 
 const BASE_FEE = ethers.BigNumber.from('10000000000000000') // 0,01 eth
 
@@ -57,7 +57,10 @@ export default class Relayer {
     this.balancerRelayer = new BalancerRelayer(this)
   }
 
-  async getFinalFee(gas = ethers.BigNumber.from(200000)): Promise<ethers.BigNumber> { // 200,000 seems to be an avg of gas for execution
+  async getFinalFee(
+    gas = ethers.BigNumber.from(200000)
+  ): Promise<ethers.BigNumber> {
+    // 200,000 seems to be an avg of gas for execution
     const gasPrice = await this.provider.getGasPrice()
     return BASE_FEE.add(gas.mul(gasPrice))
   }
@@ -92,18 +95,22 @@ export default class Relayer {
   async existOrder(order: Order): Promise<boolean> {
     const isOrderOpen = await db.getOrdersByTxHash(order.createdTxHash)
     if (isOrderOpen[0].executedTxHash) {
-      logger.info(`Order ${isOrderOpen[0].createdTxHash} was executed: ${isOrderOpen[0].executedTxHash}`)
+      logger.info(
+        `Order ${isOrderOpen[0].createdTxHash} was executed: ${isOrderOpen[0].executedTxHash}`
+      )
       return false
     }
     return true
   }
 
-  async estimateGasExecution(params: any[], gasPrice = ethers.BigNumber.from(1)) {
+  async estimateGasExecution(
+    params: any[],
+    gasPrice = ethers.BigNumber.from(1)
+  ) {
     try {
-      return await this.pineCore.estimateGas.executeOrder(
-        ...params,
-        { gasPrice }
-      )
+      return await this.pineCore.estimateGas.executeOrder(...params, {
+        gasPrice
+      })
     } catch (e) {
       logger.debug(`Could not estimate gas. Error: ${e.error}`)
       return undefined
@@ -111,7 +118,6 @@ export default class Relayer {
   }
 
   getFee(baseETH: ethers.BigNumber): ethers.BigNumber {
-    // If find best is not set, just return with base expected fee
     const fee = baseETH.add(BASE_FEE)
     return fee
   }

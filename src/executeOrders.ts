@@ -2,7 +2,6 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import dotenv from 'dotenv'
 dotenv.config()
 
-
 import { connectDB } from './database'
 import Book from './book'
 import Relayer from './relayer'

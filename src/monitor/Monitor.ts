@@ -1,6 +1,5 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 
-
 import { logger } from '../utils'
 
 export default class Monitor {
@@ -9,7 +8,8 @@ export default class Monitor {
 
   constructor(provider: JsonRpcProvider) {
     this.provider = provider
-    this.timeBetweenPendingChecks = Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 15000
+    this.timeBetweenPendingChecks =
+      Number(process.env.TIME_BETWEEN_BLOCK_CHECKS) || 15000
   }
 
   async onBlock(callback: (blockNumber: number) => Promise<any>) {
@@ -26,7 +26,9 @@ export default class Monitor {
         setTimeout(loop, timeBetweenPendingChecks)
       } catch (e) {
         logger.info(e.message)
-        logger.info(`Retrying loop in ${timeBetweenPendingChecks / 1000 / 60} minutes....`)
+        logger.info(
+          `Retrying loop in ${timeBetweenPendingChecks / 1000 / 60} minutes....`
+        )
         setTimeout(loop, timeBetweenPendingChecks)
       }
     }

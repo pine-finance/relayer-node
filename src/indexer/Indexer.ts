@@ -1,10 +1,6 @@
 import { db } from '../database'
-import {
-  api,
-  logger,
-} from '../utils'
+import { api, logger } from '../utils'
 import { Order } from '../book/types'
-
 
 export default class Indexer {
   lastMonitored: number
