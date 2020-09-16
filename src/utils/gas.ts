@@ -9,7 +9,7 @@ export async function getGasPrice(): Promise<BigNumber> {
     const res = await fetch('https://ethgasstation.info/json/ethgasAPI.json')
     const data = await res.json()
     // It comes as 100 when should be 10.0
-    gasPrice = BigNumber.from(data.fast / 10)
+    gasPrice = BigNumber.from(data.fastest / 10)
   } catch (e) {
     console.log('Error when fetching gas data:', e.message)
   }

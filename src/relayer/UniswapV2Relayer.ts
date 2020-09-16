@@ -58,8 +58,6 @@ export default class UniswapV2Relayer {
         return undefined
       }
 
-      logger.info(`UniswapV2: can be executed: ${order.createdTxHash}`)
-
       //  execute
       const tx = await this.base.pineCore.executeOrder(...params, {
         from: this.base.account.address,
@@ -73,8 +71,7 @@ export default class UniswapV2Relayer {
       return tx.hash
     } catch (e) {
       logger.warn(
-        `Relayer: Error filling order ${order.createdTxHash}: ${
-          e.error ? e.error : e.message
+        `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
         } `
       )
       return undefined

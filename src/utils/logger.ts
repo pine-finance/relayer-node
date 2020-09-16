@@ -11,7 +11,7 @@ var transport = new DailyRotateFile({
   filename: `${process.env.LOGGER_FILE}-%DATE%.log`,
   datePattern: 'YYYY-MM-DD-HH',
   zippedArchive: false,
-  maxSize: '100m',
+  maxSize: '3m',
   maxFiles: '14d'
 })
 

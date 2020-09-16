@@ -11,7 +11,7 @@ export const UNISWAP_V1_HANDLER_ADDRESSES: Addresses = {
 }
 
 export const UNISWAP_V2_HANDLER_ADDRESSES: Addresses = {
-  1: '0x842a8dea50478814e2bfaff9e5a27dc0d1fdd37c',
+  1: '0x4b00296Eb3d6261807A6AbBA7E8244C6cBb8EC7D',
   4: '0xbf95dd8dfbccdba150b4bc3d227a80c53acd3e0f'
 }
 

@@ -73,8 +73,6 @@ class API {
 
       const { data } = await res.json()
 
-      console.log(data)
-
       return data.orders.map((o: any) => o.id)
     } catch (e) {
       console.log(e.message)

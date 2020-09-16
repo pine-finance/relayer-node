@@ -1,6 +1,6 @@
 .DS_Store
 .idea
-*.log
+*.log**
 *.gz
 
 node_modules

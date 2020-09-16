@@ -30,7 +30,7 @@ export default class OneInchRelayer {
       OneSplitABI,
       this.base.account
     )
-    const splitExchanges = this.getSplitExchanges()
+
     try {
       // Get handler to use
       const handler = this.oneInchHandler
@@ -50,12 +50,6 @@ export default class OneInchRelayer {
           0
         )
 
-        data.distribution.forEach(function(value: any, index: any) {
-          if (value > 0) {
-            logger.info(`${splitExchanges[index]}: ${(value * 100) / parts}%`)
-          }
-        })
-
         distributionsA = data.distribution
 
         data = await contract.getExpectedReturn(
@@ -65,12 +59,6 @@ export default class OneInchRelayer {
           parts,
           0
         )
-
-        data.distribution.forEach(function(value: any, index: any) {
-          if (value > 0) {
-            logger.info(`${splitExchanges[index]}: ${(value * 100) / parts}%`)
-          }
-        })
 
         distributionsB = data.distribution
 
@@ -84,12 +72,6 @@ export default class OneInchRelayer {
           0
         )
 
-        data.distribution.forEach(function(value: any, index: any) {
-          if (value > 0) {
-            logger.info(`${splitExchanges[index]}: ${(value * 100) / parts}%`)
-          }
-        })
-
         distributionsA = data.distribution
         expectedOut = data.returnAmount
       }
@@ -97,7 +79,6 @@ export default class OneInchRelayer {
       const ratio =
         expectedOut.toString() / parseInt(order.minReturn.toString())
 
-      logger.info(`${order.inputToken} -> ${order.outputToken}`)
       logger.info(
         `Can buy ${expectedOut.toString()} / ${order.minReturn.toString()} => ${ratio}% `
       )
@@ -147,8 +128,6 @@ export default class OneInchRelayer {
         return undefined
       }
 
-      logger.info(`1inch: can be executed: ${order.createdTxHash}`)
-
       // execute
       const tx = await this.base.pineCore.executeOrder(...params, {
         from: this.base.account.address,
@@ -162,8 +141,7 @@ export default class OneInchRelayer {
       return tx.hash
     } catch (e) {
       console.log(
-        `Relayer: Error filling order ${order.createdTxHash}: ${
-          e.error ? e.error : e.message
+        `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
         }`
       )
       return undefined

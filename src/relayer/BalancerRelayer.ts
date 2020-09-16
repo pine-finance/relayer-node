@@ -54,7 +54,6 @@ export default class BalancerRelayer {
         order.outputToken === ETH_ADDRESS ? WETH : order.outputToken
       const isTokenToToken =
         order.inputToken !== ETH_ADDRESS && order.outputToken !== ETH_ADDRESS
-
       if (isTokenToToken) {
         let data = await getPoolsWithTokens(inputAddress, WETH)
         let poolData = parsePoolData(
@@ -82,7 +81,7 @@ export default class BalancerRelayer {
 
         data = await getPoolsWithTokens(WETH, outputAddress)
 
-        poolData = parsePoolData(data.pools, WETH, outputAddress)
+        poolData = parsePoolData(data.pools.slice(0, 20), WETH, outputAddress)
 
         sorSwaps = smartOrderRouter(
           poolData,
@@ -126,7 +125,7 @@ export default class BalancerRelayer {
         poolB = sorSwaps[0].pool
       }
 
-      console.log('pools founded:', poolA, poolB)
+      //console.log('pools founded:', poolA, poolB)
       logger.info(
         `Can buy ${expectedOut.toString()} / ${order.minReturn.toString()}. ${expectedOut.div(
           order.minReturn.toString()
@@ -166,8 +165,6 @@ export default class BalancerRelayer {
         return undefined
       }
 
-      logger.info(`Balancer: can be executed: ${order.createdTxHash}`)
-
       //  execute
       const tx = await this.base.pineCore.executeOrder(...params, {
         from: this.base.account.address,
@@ -188,8 +185,7 @@ export default class BalancerRelayer {
       }
 
       logger.warn(
-        `Relayer: Error filling order ${order.createdTxHash}: ${
-          e.error ? e.error : e.message
+        `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
         }`
       )
       return undefined
