@@ -26,7 +26,7 @@ export const ONEINCH_HANDLER_ADDRESSES: Addresses = {
 }
 
 export const KYBER_HANDLER_ADDRESSES: Addresses = {
-  1: '0x7157eeffd675cc01c50eafe69823e6836ea5c9cc',
+  1: '0x792d1efb874ab48d2587a659a0e29ce7d6da9cde',
   4: '0x7157eeffd675cc01c50eafe69823e6836ea5c9cc'
 }
 

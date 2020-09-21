@@ -41,7 +41,6 @@ export default class UniswapV2Relayer {
       gasPrice = await this.base.provider.getGasPrice()
     }
 
-    console.log('aaaaa', gasPrice.toString())
     let fee = this.base.getFee(gasPrice.mul(estimatedGas)) // gasPrice
 
     // Build execution params with fee

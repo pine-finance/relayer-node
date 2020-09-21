@@ -15,7 +15,7 @@
     "executor:mainnet:find-best": "CHAIN_ID=1 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:mainnet:balancer": "CHAIN_ID=1 HANDLER=balancer LOGGER_FILE=executeOrders_balancer ts-node --type-check ./src/executeOrders.ts",
     "executor:mainnet:1Inch": "CHAIN_ID=1 HANDLER=1Inch LOGGER_FILE=executeOrders_1Inch ts-node --type-check ./src/executeOrders.ts",
-    "executor:mainnet:kyber": "CHAIN_ID=1 HANDLER=kyber ts-node --type-check ./src/executeOrders.ts",
+    "executor:mainnet:kyber": "CHAIN_ID=1 HANDLER=kyber LOGGER_FILE=executeOrders_kyber ts-node --type-check ./src/executeOrders.ts",
     "executor:rinkeby": "CHAIN_ID=4  LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:rinkeby:find-best": "CHAIN_ID=4 FIND_BEST=true LOGGER_FILE=executeOrders ts-node --type-check ./src/executeOrders.ts",
     "executor:rinkeby:balancer": "CHAIN_ID=4 HANDLER=balancer ts-node --type-check ./src/executeOrders.ts",
