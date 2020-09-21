@@ -74,7 +74,7 @@ export default class UniswapV2Relayer {
       logger.info(
         `Relayer: Filled ${order.createdTxHash} order, executedTxHash: ${tx.hash}`
       )
-      // return tx.hash
+      return tx.hash
     } catch (e) {
       console.log(
         `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
