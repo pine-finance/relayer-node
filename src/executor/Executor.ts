@@ -69,7 +69,11 @@ export default class Executor {
         `Executor: Order not ready to be filled ${order.createdTxHash}`
       )
       if (!this.isLoop) {
-        setTimeout(async () => await this.executeOrder(order), 1000)
+        let delay = 1000
+        // if ((Math.floor(Date.now() / 3600) / 60) % 2 !== 0) {
+        //   delay = delay * 15
+        // }
+        setTimeout(async () => await this.executeOrder(order), delay)
       }
     }
   }

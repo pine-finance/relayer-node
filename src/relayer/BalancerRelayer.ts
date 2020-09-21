@@ -103,7 +103,11 @@ export default class BalancerRelayer {
       } else {
         const data = await getPoolsWithTokens(inputAddress, outputAddress)
 
-        const poolData = parsePoolData(data.pools, inputAddress, outputAddress)
+        const poolData = parsePoolData(
+          data.pools.slice(0, 20),
+          inputAddress,
+          outputAddress
+        )
 
         const sorSwaps = smartOrderRouter(
           poolData,
@@ -127,7 +131,8 @@ export default class BalancerRelayer {
 
       //console.log('pools founded:', poolA, poolB)
       logger.info(
-        `Can buy ${expectedOut.toString()} / ${order.minReturn.toString()}. ${expectedOut.div(
+        `${order.createdTxHash
+        }: Can buy ${expectedOut.toString()} / ${order.minReturn.toString()}. ${expectedOut.div(
           order.minReturn.toString()
         )}%`
       )

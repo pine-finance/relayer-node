@@ -23,6 +23,8 @@ export default class OneInchRelayer {
   }
 
   async execute(order: Order): Promise<string | undefined> {
+    const canExecute = true // (Math.floor(Date.now() / 3600) / 60) % 2 !== 0
+
     const parts = 10
     const CONTRACT_ADDRESS = '0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E'
     const contract = new Contract(
@@ -80,7 +82,8 @@ export default class OneInchRelayer {
         expectedOut.toString() / parseInt(order.minReturn.toString())
 
       logger.info(
-        `Can buy ${expectedOut.toString()} / ${order.minReturn.toString()} => ${ratio}% `
+        `${order.createdTxHash
+        }: Can buy ${expectedOut.toString()} / ${order.minReturn.toString()} => ${ratio}% `
       )
 
       if (ratio < 1) {
@@ -126,6 +129,10 @@ export default class OneInchRelayer {
       const isOrderOpen = await this.base.existOrder(order)
       if (!isOrderOpen) {
         return undefined
+      }
+
+      if (!canExecute && ratio < 1.2) {
+        return
       }
 
       // execute

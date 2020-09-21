@@ -25,6 +25,11 @@ export const ONEINCH_HANDLER_ADDRESSES: Addresses = {
   4: '0xdcce5c7b7caf980fd8fadd6d89d68f6003468197'
 }
 
+export const KYBER_HANDLER_ADDRESSES: Addresses = {
+  1: '0x7157eeffd675cc01c50eafe69823e6836ea5c9cc',
+  4: '0x7157eeffd675cc01c50eafe69823e6836ea5c9cc'
+}
+
 export const WETH_ADDRESSES: Addresses = {
   1: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   4: '0xc778417e063141139fce010982780140aa0cd5ab'

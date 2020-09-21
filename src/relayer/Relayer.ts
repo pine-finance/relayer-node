@@ -7,13 +7,14 @@ import { joinSignature } from '@ethersproject/bytes'
 import OneInchRelayer from './OneInchRelayer'
 import UniswapV2Relayer from './UniswapV2Relayer'
 import BalancerRelayer from './BalancerRelayer'
+import KyberRelayer from './KyberRelayer'
 import { db } from '../database'
 import { logger } from '../utils'
 import { Order } from '../book/types'
 import pineCoreBI from '../contracts/abis/PineCore.json'
 import { PINE_CORE_ADDRESSES } from '../contracts'
 
-const BASE_FEE = ethers.BigNumber.from('10000000000000000') // 0,01 eth
+const BASE_FEE = ethers.BigNumber.from('14000000000000000') // 0,01 eth
 
 export default class Relayer {
   provider: JsonRpcProvider
@@ -24,6 +25,7 @@ export default class Relayer {
   uniswapV2Relayer: UniswapV2Relayer
   oneInchRelayer: OneInchRelayer
   balancerRelayer: BalancerRelayer
+  kyberRelayer: KyberRelayer
 
   constructor(provider: JsonRpcProvider) {
     const { CHAIN_ID, SENDER_ADDRESS, SENDER_PRIVKEY } = process.env
@@ -55,6 +57,7 @@ export default class Relayer {
     this.oneInchRelayer = new OneInchRelayer(this)
     this.uniswapV2Relayer = new UniswapV2Relayer(this)
     this.balancerRelayer = new BalancerRelayer(this)
+    this.kyberRelayer = new KyberRelayer(this)
   }
 
   async getFinalFee(
@@ -87,6 +90,8 @@ export default class Relayer {
       return this.balancerRelayer.execute(order)
     } else if (handler === '1Inch') {
       return this.oneInchRelayer.execute(order)
+    } else if (handler === 'kyber') {
+      return this.kyberRelayer.execute(order)
     } else {
       return this.uniswapV2Relayer.execute(order)
     }

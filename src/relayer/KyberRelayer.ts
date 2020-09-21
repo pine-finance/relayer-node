@@ -2,20 +2,20 @@ import { ethers } from 'ethers'
 import { Contract } from '@ethersproject/contracts'
 
 import Relayer from './Relayer'
-import { UNISWAP_V2_HANDLER_ADDRESSES } from '../contracts'
-import { logger, getGasPrice } from '../utils'
+import { KYBER_HANDLER_ADDRESSES } from '../contracts'
+import { logger } from '../utils'
 import { Order } from '../book/types'
 import HandlerABI from '../contracts/abis/Handler.json'
 
 export default class UniswapV2Relayer {
   base: Relayer
-  uniswapV2Handler: Contract
+  kyberHandler: Contract
 
   constructor(base: Relayer) {
     this.base = base
 
-    this.uniswapV2Handler = new Contract(
-      UNISWAP_V2_HANDLER_ADDRESSES[base.chainId],
+    this.kyberHandler = new Contract(
+      KYBER_HANDLER_ADDRESSES[base.chainId],
       HandlerABI,
       base.account
     )
@@ -23,7 +23,7 @@ export default class UniswapV2Relayer {
 
   async execute(order: Order): Promise<string | undefined> {
     // Get handler to use
-    const handler = this.uniswapV2Handler
+    const handler = this.kyberHandler
     if (!handler) {
       return
     }
@@ -36,11 +36,12 @@ export default class UniswapV2Relayer {
       return
     }
 
-    let gasPrice = await getGasPrice()
+    let gasPrice = ethers.BigNumber.from(1000000000) // await getGasPrice()
     if (gasPrice.eq(0)) {
       gasPrice = await this.base.provider.getGasPrice()
     }
 
+    console.log('aaaaa', gasPrice.toString())
     let fee = this.base.getFee(gasPrice.mul(estimatedGas)) // gasPrice
 
     // Build execution params with fee
@@ -74,8 +75,12 @@ export default class UniswapV2Relayer {
       logger.info(
         `Relayer: Filled ${order.createdTxHash} order, executedTxHash: ${tx.hash}`
       )
-      return tx.hash
+      // return tx.hash
     } catch (e) {
+      console.log(
+        `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
+        } `
+      )
       logger.warn(
         `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
         } `
