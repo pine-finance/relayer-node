@@ -9,12 +9,11 @@ import UniswapV2Relayer from './UniswapV2Relayer'
 import BalancerRelayer from './BalancerRelayer'
 import KyberRelayer from './KyberRelayer'
 import { db } from '../database'
-import { logger } from '../utils'
+import { logger, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import pineCoreBI from '../contracts/abis/PineCore.json'
 import { PINE_CORE_ADDRESSES } from '../contracts'
 
-const BASE_FEE = ethers.BigNumber.from('14000000000000000') // 0,01 eth
 
 export default class Relayer {
   provider: JsonRpcProvider
@@ -110,7 +109,7 @@ export default class Relayer {
 
   async estimateGasExecution(
     params: any[],
-    gasPrice = ethers.BigNumber.from(1)
+    gasPrice = ethers.BigNumber.from(1000000000)
   ) {
     try {
       return await this.pineCore.estimateGas.executeOrder(...params, {

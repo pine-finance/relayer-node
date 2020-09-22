@@ -3,7 +3,7 @@ import { Contract } from '@ethersproject/contracts'
 
 import Relayer from './Relayer'
 import { KYBER_HANDLER_ADDRESSES } from '../contracts'
-import { logger } from '../utils'
+import { logger, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import HandlerABI from '../contracts/abis/Handler.json'
 
@@ -91,7 +91,7 @@ export default class UniswapV2Relayer {
   getOrderExecutionParams(
     order: Order,
     handler: ethers.Contract,
-    fee = ethers.BigNumber.from(1)
+    fee = BASE_FEE
   ): any {
     return [
       order.module,

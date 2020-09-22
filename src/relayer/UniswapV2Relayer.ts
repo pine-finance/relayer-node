@@ -3,7 +3,7 @@ import { Contract } from '@ethersproject/contracts'
 
 import Relayer from './Relayer'
 import { UNISWAP_V2_HANDLER_ADDRESSES } from '../contracts'
-import { logger, getGasPrice } from '../utils'
+import { logger, getGasPrice, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import HandlerABI from '../contracts/abis/Handler.json'
 
@@ -47,11 +47,14 @@ export default class UniswapV2Relayer {
     params = this.getOrderExecutionParams(order, handler, fee)
     try {
       // simulate
-      await this.base.pineCore.callStatic.executeOrder(...params, {
-        from: this.base.account.address,
-        gasLimit: estimatedGas.add(ethers.BigNumber.from(50000)),
-        gasPrice
-      })
+      await Promise.all([
+        this.base.pineCore.callStatic.executeOrder(...params, {
+          from: this.base.account.address,
+          gasLimit: estimatedGas.add(ethers.BigNumber.from(50000)),
+          gasPrice
+        }),
+        this.base.estimateGasExecution(params)
+      ])
 
       const isOrderOpen = await this.base.existOrder(order)
       if (!isOrderOpen) {
@@ -87,7 +90,7 @@ export default class UniswapV2Relayer {
   getOrderExecutionParams(
     order: Order,
     handler: ethers.Contract,
-    fee = ethers.BigNumber.from(1)
+    fee = BASE_FEE
   ): any {
     return [
       order.module,

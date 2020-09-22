@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { Contract } from '@ethersproject/contracts'
 
 import Relayer from './Relayer'
-import { logger, getGasPrice } from '../utils'
+import { logger, getGasPrice, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import { ONEINCH_HANDLER_ADDRESSES, ETH_ADDRESS } from '../contracts'
 import HandlerABI from '../contracts/abis/Handler.json'
@@ -160,7 +160,7 @@ export default class OneInchRelayer {
     handler: ethers.Contract,
     distributionsA: number[],
     distributionsB: number[],
-    fee = ethers.BigNumber.from(1)
+    fee = BASE_FEE
   ): any[] {
     return [
       order.module,

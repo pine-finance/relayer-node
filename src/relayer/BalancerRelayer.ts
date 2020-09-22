@@ -15,7 +15,7 @@ import {
   WETH_ADDRESSES,
   ETH_ADDRESS
 } from '../contracts'
-import { logger, getGasPrice } from '../utils'
+import { logger, getGasPrice, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import HandlerABI from '../contracts/abis/Handler.json'
 
@@ -202,7 +202,7 @@ export default class BalancerRelayer {
     handler: ethers.Contract,
     poolA: string,
     poolB: string,
-    fee = ethers.BigNumber.from(1)
+    fee = BASE_FEE
   ): any {
     return [
       order.module,
