@@ -119,12 +119,26 @@ export default class OneInchRelayer {
         fee
       )
 
+      const gasLimit = estimatedGas.add(ethers.BigNumber.from(50000))
+
       // simulate
-      await this.base.pineCore.callStatic.executeOrder(...params, {
-        from: this.base.account.address,
-        gasLimit: estimatedGas.add(ethers.BigNumber.from(50000)),
-        gasPrice
-      })
+      if (process.env.PRIVATE_NODE_URL) {
+        // Infura at estimate eth_call does not revert
+        await this.base.pineCore.callStatic.executeOrder(...params, {
+          from: this.base.account.address,
+          gasLimit,
+          gasPrice
+        })
+      } else {
+        await Promise.all([
+          this.base.pineCore.callStatic.executeOrder(...params, {
+            from: this.base.account.address,
+            gasLimit,
+            gasPrice
+          }),
+          this.base.estimateGasExecution(params)
+        ])
+      }
 
       const isOrderOpen = await this.base.existOrder(order)
       if (!isOrderOpen) {
@@ -138,8 +152,8 @@ export default class OneInchRelayer {
       // execute
       const tx = await this.base.pineCore.executeOrder(...params, {
         from: this.base.account.address,
-        gasLimit: estimatedGas.add(ethers.BigNumber.from(50000)),
-        gasPrice: gasPrice
+        gasLimit,
+        gasPrice
       })
 
       logger.info(

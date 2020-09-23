@@ -7,7 +7,7 @@ import Indexer from './indexer'
 import Monitor from './monitor'
 import Book from './book'
 import { Order } from './book/types'
-import { logger, getIndexerId, getInfuraURL, getNetworkName } from './utils'
+import { logger, getIndexerId, getProviderURL, getNetworkName } from './utils'
 
 async function setupIndexer() {
   await connectDB()
@@ -15,7 +15,7 @@ async function setupIndexer() {
   const indexerId = getIndexerId()
   let block = await db.getLatestBlock(indexerId)
 
-  const provider = new JsonRpcProvider(getInfuraURL(), getNetworkName())
+  const provider = new JsonRpcProvider(getProviderURL(), getNetworkName())
 
   const indexer = new Indexer(block)
   const monitor = new Monitor(provider)

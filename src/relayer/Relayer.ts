@@ -14,7 +14,6 @@ import { Order } from '../book/types'
 import pineCoreBI from '../contracts/abis/PineCore.json'
 import { PINE_CORE_ADDRESSES } from '../contracts'
 
-
 export default class Relayer {
   provider: JsonRpcProvider
   pineCore: Contract

@@ -8,5 +8,6 @@ node_modules
 postgres_data
 dist
 .**-audit.json
+logs
 
 
