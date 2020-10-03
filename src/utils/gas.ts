@@ -2,7 +2,7 @@ import fetch from 'isomorphic-fetch'
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
 
-export const BASE_FEE = ethers.BigNumber.from('14000000000000000') // 0,01 eth
+export const BASE_FEE = ethers.BigNumber.from('10000000000000000') // 0,01 eth
 
 export async function getGasPrice(): Promise<BigNumber> {
   let gasPrice = BigNumber.from(0)

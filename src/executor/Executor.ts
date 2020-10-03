@@ -69,7 +69,7 @@ export default class Executor {
         `Executor: Order not ready to be filled ${order.createdTxHash}`
       )
       if (!this.isLoop) {
-        let delay = 1000
+        let delay = 10000
         // if ((Math.floor(Date.now() / 3600) / 60) % 2 !== 0) {
         //   delay = delay * 15
         // }

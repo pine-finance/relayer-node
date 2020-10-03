@@ -25,7 +25,7 @@ async function setupIndexer() {
 
   // Monitor new orders
   monitor.onBlock(async (newBlock: number) => {
-    logger.verbose(`Main: Looking for new orders until block ${newBlock}`)
+    logger.info(`Main: Looking for new orders until block ${newBlock}`)
     const times = (newBlock - block) / steps + 1
     for (let i = 0; i < times; i++) {
       const fromBlock = steps * i + block
