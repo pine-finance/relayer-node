@@ -23,6 +23,10 @@ export async function getGasPrice(): Promise<BigNumber> {
         resHistoric.toNumber()
       )
     )
+
+    if (gasPrice.toNumber() > 200000000000) {
+      return BigNumber.from(0)
+    }
   } catch (e) {
     console.log('Error when fetching gas data:', e.message)
   }
