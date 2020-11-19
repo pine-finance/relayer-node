@@ -7,12 +7,16 @@ import { logger, getGasPrice, BASE_FEE } from '../utils'
 import { Order } from '../book/types'
 import HandlerABI from '../contracts/abis/Handler.json'
 
+const timeBetweenExecution = Number(process.env.TIME_BETWEEN_EXECUTION || 0)
+
 export default class UniswapV2Relayer {
   base: Relayer
   uniswapV2Handler: Contract
+  candidates: { [key: string]: number }
 
   constructor(base: Relayer) {
     this.base = base
+    this.candidates = {}
 
     this.uniswapV2Handler = new Contract(
       UNISWAP_V2_HANDLER_ADDRESSES[base.chainId],
@@ -33,12 +37,18 @@ export default class UniswapV2Relayer {
     // Get real estimated gas
     let estimatedGas = await this.base.estimateGasExecution(params)
     if (!estimatedGas) {
+      this.candidates[order.id] = 0
       return
     }
 
     let gasPrice = await getGasPrice()
     if (gasPrice.eq(0)) {
       gasPrice = await this.base.provider.getGasPrice()
+    }
+
+    if (gasPrice.toNumber() > 200000000000) {
+      this.candidates[order.id] = 0
+      return
     }
 
     let fee = this.base.getFee(gasPrice.mul(estimatedGas)) // gasPrice
@@ -68,7 +78,19 @@ export default class UniswapV2Relayer {
 
       const isOrderOpen = await this.base.existOrder(order)
       if (!isOrderOpen) {
-        return undefined
+        this.candidates[order.id] = 0
+        return
+      }
+
+      const now = Date.now()
+      if (this.candidates[order.id] === 0) {
+        this.candidates[order.id] = now
+        return
+      }
+
+      // Check if the rate keeps between blocks
+      if (now - this.candidates[order.id] < timeBetweenExecution) {
+        return
       }
 
       params = this.getOrderExecutionParams(
@@ -93,7 +115,9 @@ export default class UniswapV2Relayer {
         `Relayer: Error filling order ${order.createdTxHash}: ${e.error ? e.error : e.message
         } `
       )
-      return undefined
+
+      this.candidates[order.id] = 0
+      return
     }
   }
 
